@@ -90,14 +90,29 @@
 #define SABRESD_USR_DEF_RED_LED	IMX_GPIO_NR(1, 2)
 #define SABRESD_VOLUME_UP	IMX_GPIO_NR(1, 4)
 #define SABRESD_VOLUME_DN	IMX_GPIO_NR(1, 5)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(7, 11)
+#define SABRESD_CSI0_PWN	IMX_GPIO_NR(2, 25)
+#define SABRESD_CSI0_RST	IMX_GPIO_NR(5, 20)
+#else
 #define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(1, 9)
 #define SABRESD_CSI0_PWN	IMX_GPIO_NR(1, 16)
 #define SABRESD_CSI0_RST	IMX_GPIO_NR(1, 17)
+#endif
 #define SABRESD_ACCL_INT	IMX_GPIO_NR(1, 18)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_MIPICSI_PWN	IMX_GPIO_NR(4, 5)
+#define SABRESD_MIPICSI_RST	IMX_GPIO_NR(7, 13)
+#else
 #define SABRESD_MIPICSI_PWN	IMX_GPIO_NR(1, 19)
 #define SABRESD_MIPICSI_RST	IMX_GPIO_NR(1, 20)
+#endif
 #define SABRESD_RGMII_RST	IMX_GPIO_NR(1, 25)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_RGMII_INT	IMX_GPIO_NR(1, 28)
+#else
 #define SABRESD_RGMII_INT	IMX_GPIO_NR(1, 26)
+#endif
 #define SABRESD_CHARGE_UOK_B	IMX_GPIO_NR(1, 27)
 #define SABRESD_USBH1_PWR_EN	IMX_GPIO_NR(1, 29)
 #define SABRESD_DISP0_PWR_EN	IMX_GPIO_NR(1, 30)
@@ -129,7 +144,11 @@
 #define SABRESD_CAN1_STBY	IMX_GPIO_NR(4, 5)
 #define SABRESD_ECSPI1_CS0  IMX_GPIO_NR(4, 9)
 #define SABRESD_CODEC_PWR_EN	IMX_GPIO_NR(4, 10)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_HDMI_CEC_IN	IMX_GPIO_NR(5, 2)
+#else
 #define SABRESD_HDMI_CEC_IN	IMX_GPIO_NR(4, 11)
+#endif
 #define SABRESD_PCIE_DIS_B	IMX_GPIO_NR(4, 14)
 
 #define SABRESD_DI0_D0_CS	IMX_GPIO_NR(5, 0)
@@ -137,10 +156,17 @@
 #define SABRESD_PCIE_WAKE_B	IMX_GPIO_NR(5, 20)
 
 #define SABRESD_CAP_TCH_INT1	IMX_GPIO_NR(6, 7)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_CAP_TCH_INT0	IMX_GPIO_NR(6, 9)
+#define SABRESD_DISP_RST_B	IMX_GPIO_NR(1, 7)
+#define SABRESD_DISP_PWR_EN	IMX_GPIO_NR(1, 8)
+#define SABRESD_CABC_EN0	IMX_GPIO_NR(6, 10)
+#else
 #define SABRESD_CAP_TCH_INT0	IMX_GPIO_NR(6, 8)
 #define SABRESD_DISP_RST_B	IMX_GPIO_NR(6, 11)
 #define SABRESD_DISP_PWR_EN	IMX_GPIO_NR(6, 14)
 #define SABRESD_CABC_EN0	IMX_GPIO_NR(6, 15)
+#endif
 #define SABRESD_CABC_EN1	IMX_GPIO_NR(6, 16)
 #define SABRESD_AUX_3V15_EN	IMX_GPIO_NR(6, 9)
 #define SABRESD_DISP0_WR_REVB	IMX_GPIO_NR(6, 9)
@@ -149,8 +175,13 @@
 
 #define SABRESD_HEADPHONE_DET	IMX_GPIO_NR(7, 8)
 #define SABRESD_PCIE_RST_B_REVB	IMX_GPIO_NR(7, 12)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_PMIC_INT_B	IMX_GPIO_NR(6, 8)
+#define SABRESD_PFUZE_INT	IMX_GPIO_NR(6, 8)
+#else
 #define SABRESD_PMIC_INT_B	IMX_GPIO_NR(7, 13)
 #define SABRESD_PFUZE_INT	IMX_GPIO_NR(7, 13)
+#endif
 
 #define SABRESD_EPDC_SDDO_0	IMX_GPIO_NR(2, 22)
 #define SABRESD_EPDC_SDDO_1	IMX_GPIO_NR(3, 10)
@@ -180,7 +211,11 @@
 #define SABRESD_EPDC_SDCLKN	IMX_GPIO_NR(3, 0)
 #define SABRESD_EPDC_SDSHR	IMX_GPIO_NR(2, 29)
 #define SABRESD_EPDC_PWRCOM	IMX_GPIO_NR(2, 28)
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_EPDC_PWRSTAT	IMX_GPIO_NR(2, 20)
+#else
 #define SABRESD_EPDC_PWRSTAT	IMX_GPIO_NR(2, 21)
+#endif
 #define SABRESD_EPDC_PWRCTRL0	IMX_GPIO_NR(2, 20)
 #define SABRESD_EPDC_PWRCTRL1	IMX_GPIO_NR(2, 19)
 #define SABRESD_EPDC_PWRCTRL2	IMX_GPIO_NR(2, 18)
@@ -202,6 +237,11 @@
 #define SABRESD_ELAN_INT	IMX_GPIO_NR(3, 28)
 
 #define MX6_ENET_IRQ		IMX_GPIO_NR(1, 6)
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_IR_CAMERA_POWER_EN	IMX_GPIO_NR(7, 0)
+#endif
+
 #define IOMUX_OBSRV_MUX1_OFFSET	0x3c
 #define OBSRV_MUX1_MASK			0x3f
 #define OBSRV_MUX1_ENET_IRQ		0x9
@@ -210,7 +250,7 @@ static struct clk *sata_clk;
 static struct clk *clko;
 static int mma8x5x_position;
 static int mag3110_position = 1;
-static int max11801_mode = 1;
+static int max11801_mode = 0;
 static int caam_enabled;
 static int uart5_enabled;
 
@@ -236,7 +276,11 @@ static const struct esdhc_platform_data mx6q_sabresd_sd3_data __initconst = {
 	.cd_gpio = SABRESD_SD3_CD,
 	.wp_gpio = SABRESD_SD3_WP,
 	.keep_power_at_suspend = 1,
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	.support_8bit = 0,
+#else	
 	.support_8bit = 1,
+#endif	
 	.delay_line = 0,
 	.cd_type = ESDHC_CD_CONTROLLER,
 	.runtime_pm = 1,
@@ -501,6 +545,27 @@ static struct platform_device sabresd_vwm8962_reg_devices = {
 		.platform_data = &sabresd_vwm8962_reg_config,
 	},
 };
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+static void mx6q_ir_camera_power_control(unsigned char enable, unsigned char is_init)
+{
+	if(is_init)
+	{
+		gpio_request(SABRESD_IR_CAMERA_POWER_EN, "ircam-power");
+		gpio_direction_output(SABRESD_IR_CAMERA_POWER_EN, 1);
+	}
+
+	if(enable > 1)
+	{
+		enable = 1;
+	}
+
+	msleep(5);
+	gpio_set_value(SABRESD_IR_CAMERA_POWER_EN, enable);
+
+	printk("IR camera power %s\n", enable ? "on" : "off");
+}
+#endif
 
 static void mx6q_csi0_cam_powerdown(int powerdown)
 {
@@ -809,10 +874,21 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 	{
 		I2C_BOARD_INFO("wm89**", 0x1a),
 	},
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
+	
+	{
+		I2C_BOARD_INFO("egalax_ts", 0x4),
+		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT0),
+	},
+#else	
 	{
 		I2C_BOARD_INFO("ov564x", 0x3c),
 		.platform_data = (void *)&camera_data,
 	},
+#endif	
 	{
 		I2C_BOARD_INFO("mma8x5x", 0x1c),
 		.platform_data = (void *)&mma8x5x_position,
@@ -820,13 +896,21 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 };
 
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	{
 		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
 	},
+#endif
 	{
 		I2C_BOARD_INFO("ov5640_mipi", 0x3c),
 		.platform_data = (void *)&mipi_csi2_data,
 	},
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	{ 
+		I2C_BOARD_INFO("Goodix-TS", 0x5d),
+	},
+#else
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
 		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT0),
@@ -836,6 +920,7 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 		.platform_data = (void *)&max11801_mode,
 		.irq = gpio_to_irq(SABRESD_TS_INT),
 	},
+#endif
 };
 
 static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
@@ -843,6 +928,7 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
 		I2C_BOARD_INFO("max17135", 0x48),
 		.platform_data = &max17135_pdata,
 	},
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
 		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT1),
@@ -856,14 +942,24 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
 		I2C_BOARD_INFO("isl29023", 0x44),
 		.irq  = gpio_to_irq(SABRESD_ALS_INT),
 		.platform_data = &ls_data,
-	}, {
+	}, 
+	{
 		I2C_BOARD_INFO("elan-touch", 0x10),
 		.irq = gpio_to_irq(SABRESD_ELAN_INT),
 	},
+#endif
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	{
+		I2C_BOARD_INFO("ov5640", 0x3c),//I2C_BOARD_INFO("ov5642", 0x3c),
+		.platform_data = (void *)&camera_data,
+	},
+#else
 	{
 		I2C_BOARD_INFO("mxc_ldb_i2c", 0x50),
 		.platform_data = (void *)1,	/* lvds port1 */
 	},
+#endif	
 };
 
 static int epdc_get_pins(void)
@@ -1281,7 +1377,7 @@ static void mx6_reset_mipi_dsi(void)
 }
 
 static struct mipi_dsi_platform_data mipi_dsi_pdata = {
-	.ipu_id		= 0,
+	.ipu_id		= 1,
 	.disp_id	= 1,
 	.lcd_panel	= "TRULY-WVGA",
 	.reset		= mx6_reset_mipi_dsi,
@@ -1295,7 +1391,18 @@ static struct ipuv3_fb_platform_data sabresd_fb_data[] = {
 	.default_bpp = 16,
 	.int_clk = false,
 	.late_init = false,
-	}, {
+	},
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)	 
+	{
+	.disp_dev = "mipi_dsi",
+	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
+	.mode_str = "TRULY-WVGA",
+	.default_bpp = 32,
+	.int_clk = false,
+	.late_init = false,
+	},
+#endif	
+	{
 	.disp_dev = "hdmi",
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "1920x1080M@60",
@@ -1384,9 +1491,9 @@ static struct fsl_mxc_ldb_platform_data ldb_data = {
 	.ipu_id = 0,
 	.disp_id = 1,
 	.ext_ref = 1,
-	.mode = LDB_SEP1,
-	.sec_ipu_id = 0,
-	.sec_disp_id = 0,
+	.mode = LDB_SEP0,
+	.sec_ipu_id = 1,
+	.sec_disp_id = 1,
 };
 
 static struct max8903_pdata charger1_data = {
@@ -2031,6 +2138,7 @@ static void __init mx6_sabresd_board_init(void)
 	imx6q_add_sdhci_usdhc_imx(1, &mx6q_sabresd_sd2_data);
 	imx_add_viv_gpu(&imx6_gpu_data, &imx6q_gpu_pdata);
 	imx6q_sabresd_init_usb();
+	
 	/* SATA is not supported by MX6DL/Solo */
 	if (cpu_is_mx6q()) {
 #ifdef CONFIG_SATA_AHCI_PLATFORM
@@ -2040,6 +2148,7 @@ static void __init mx6_sabresd_board_init(void)
 			(void __iomem *)ioremap(MX6Q_SATA_BASE_ADDR, SZ_4K));
 #endif
 	}
+
 	imx6q_add_vpu();
 	imx6q_init_audio();
 	platform_device_register(&sabresd_vmmc_reg_devices);

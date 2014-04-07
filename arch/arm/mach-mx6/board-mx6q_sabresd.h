@@ -20,6 +20,8 @@
 #define _BOARD_MX6Q_SABRESD_H
 #include <mach/iomux-mx6q.h>
 
+#define MX6Q_NK1006A
+
 static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	/* AUDMUX */
 	MX6Q_PAD_CSI0_DAT4__AUDMUX_AUD3_TXC,
@@ -33,6 +35,10 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_GPIO_1__WDOG2_WDOG_B,		/*WDOG_B to reset pmic*/
 	MX6Q_PAD_GPIO_2__GPIO_1_2,		/* user defined red led */
 	MX6Q_PAD_GPIO_7__GPIO_1_7,		/* NERR */
+
+#ifdef MX6Q_NK1006A
+	MX6Q_PAD_GPIO_7__GPIO_1_8,   /* MIPI-LCD DISP_PWR_EN Signal */
+#endif 
 
 	/* CCM  */
 	MX6Q_PAD_GPIO_0__CCM_CLKO,		/* SGTL500 sys_mclk */
@@ -125,8 +131,13 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_NANDF_RB0__GPIO_6_10, /* AUX_5V Enable */
 
 	/* I2C1, WM8958 */
+#ifdef MX6Q_NK1006A
+	MX6Q_PAD_EIM_D21__I2C1_SCL,
+	MX6Q_PAD_EIM_D28__I2C1_SDA,
+#else	
 	MX6Q_PAD_CSI0_DAT8__I2C1_SDA,
 	MX6Q_PAD_CSI0_DAT9__I2C1_SCL,
+#endif
 
 	/* I2C2, Camera, MIPI */
 	MX6Q_PAD_KEY_COL3__I2C2_SCL,
@@ -174,8 +185,13 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_SD1_DAT3__PWM1_PWMO,		/* GPIO1[21] */
 
 	/* UART1 for debug */
+#ifdef MX6Q_NK1006A
+	MX6Q_PAD_SD3_DAT6__UART1_RXD,
+	MX6Q_PAD_SD3_DAT7__UART1_TXD,
+#else
 	MX6Q_PAD_CSI0_DAT10__UART1_TXD,
 	MX6Q_PAD_CSI0_DAT11__UART1_RXD,
+#endif
 
 	/* UART3 for gps */
 	MX6Q_PAD_EIM_D24__UART3_TXD,
@@ -189,7 +205,9 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_ENET_TXD1__GPIO_1_29,
 
 	/* USB OC pin */
+#ifndef MX6Q_NK1006A
 	MX6Q_PAD_EIM_D21__USBOH3_USBOTG_OC,
+#endif	
 	MX6Q_PAD_EIM_D30__USBOH3_USBH1_OC,
 
 	/* USDHC2 */
@@ -213,10 +231,17 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_SD3_DAT1__USDHC3_DAT1_50MHZ,
 	MX6Q_PAD_SD3_DAT2__USDHC3_DAT2_50MHZ,
 	MX6Q_PAD_SD3_DAT3__USDHC3_DAT3_50MHZ,
+	
+#ifdef MX6Q_NK1006A
+	/*IR sensor board power control*/
+	MX6Q_PAD_SD3_DAT5__GPIO_7_0,
+#else	
 	MX6Q_PAD_SD3_DAT4__USDHC3_DAT4_50MHZ,
 	MX6Q_PAD_SD3_DAT5__USDHC3_DAT5_50MHZ,
 	MX6Q_PAD_SD3_DAT6__USDHC3_DAT6_50MHZ,
 	MX6Q_PAD_SD3_DAT7__USDHC3_DAT7_50MHZ,
+#endif
+
 	MX6Q_PAD_NANDF_D0__GPIO_2_0,		/* SD3_CD */
 	MX6Q_PAD_NANDF_D1__GPIO_2_1,		/* SD3_WP */
 
@@ -244,7 +269,13 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	/* Audio Codec */
 	MX6Q_PAD_KEY_COL2__GPIO_4_10,		/* CODEC_PWR_EN */
 	MX6Q_PAD_SD3_RST__GPIO_7_8,			/* HEADPHONE_DET */
+
+#ifdef MX6Q_NK1006A
+	/*AUDIO MICROPHONE_DET*/
+	MX6Q_PAD_GPIO_16__GPIO_7_11,
+#else	
 	MX6Q_PAD_GPIO_9__GPIO_1_9,			/* MICROPHONE_DET */
+#endif
 
 	/*GPS AUX_3V15_EN*/
 	MX6Q_PAD_NANDF_WP_B__GPIO_6_9,
@@ -263,6 +294,11 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_NANDF_CS2__GPIO_6_15,
 	/* CABC_EN1 */
 	MX6Q_PAD_NANDF_CS3__GPIO_6_16,
+
+#ifdef MX6Q_NK1006A
+	MX6Q_PAD_CSI0_DATA_EN__GPIO_5_20,	/* csi0 reset */
+	MX6Q_PAD_EIM_OE__GPIO_2_25,		/* csi0 power enable */
+#endif	
 };
 
 static iomux_v3_cfg_t mx6q_sabresd_csi0_sensor_pads[] = {
@@ -275,7 +311,9 @@ static iomux_v3_cfg_t mx6q_sabresd_csi0_sensor_pads[] = {
 	MX6Q_PAD_CSI0_DAT17__IPU1_CSI0_D_17,
 	MX6Q_PAD_CSI0_DAT18__IPU1_CSI0_D_18,
 	MX6Q_PAD_CSI0_DAT19__IPU1_CSI0_D_19,
+#ifndef MX6Q_NK1006A	
 	MX6Q_PAD_CSI0_DATA_EN__IPU1_CSI0_DATA_EN,
+#endif	
 	MX6Q_PAD_CSI0_MCLK__IPU1_CSI0_HSYNC,
 	MX6Q_PAD_CSI0_PIXCLK__IPU1_CSI0_PIXCLK,
 	MX6Q_PAD_CSI0_VSYNC__IPU1_CSI0_VSYNC,
