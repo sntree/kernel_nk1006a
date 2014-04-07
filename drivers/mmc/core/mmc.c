@@ -228,9 +228,17 @@ static int mmc_get_ext_csd(struct mmc_card *card, u8 **new_ext_csd)
 				mmc_hostname(card->host));
 			err = 0;
 		}
-	} else
+	} 
+	else
+	{
+		if(ext_csd[EXT_CSD_REV] > 6) /*modify for emmc v5.0 compatiable*/
+		{
+			ext_csd[EXT_CSD_REV] = 6;
+		}
+		
 		*new_ext_csd = ext_csd;
-
+	}
+	
 	return err;
 }
 
