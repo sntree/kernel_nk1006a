@@ -250,7 +250,11 @@ static struct clk *sata_clk;
 static struct clk *clko;
 static int mma8x5x_position;
 static int mag3110_position = 1;
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 static int max11801_mode = 0;
+#else
+static int max11801_mode = 1;
+#endif
 static int caam_enabled;
 static int uart5_enabled;
 
@@ -1377,7 +1381,11 @@ static void mx6_reset_mipi_dsi(void)
 }
 
 static struct mipi_dsi_platform_data mipi_dsi_pdata = {
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	.ipu_id		= 1,
+#else
+	.ipu_id		= 0,
+#endif
 	.disp_id	= 1,
 	.lcd_panel	= "TRULY-WVGA",
 	.reset		= mx6_reset_mipi_dsi,
@@ -1409,7 +1417,8 @@ static struct ipuv3_fb_platform_data sabresd_fb_data[] = {
 	.default_bpp = 32,
 	.int_clk = false,
 	.late_init = false,
-	}, {
+	}, 
+	{
 	.disp_dev = "ldb",
 	.interface_pix_fmt = IPU_PIX_FMT_RGB666,
 	.mode_str = "LDB-XGA",
@@ -1491,9 +1500,15 @@ static struct fsl_mxc_ldb_platform_data ldb_data = {
 	.ipu_id = 0,
 	.disp_id = 1,
 	.ext_ref = 1,
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	.mode = LDB_SEP0,
 	.sec_ipu_id = 1,
 	.sec_disp_id = 1,
+#else
+	.mode = LDB_SEP1,
+	.sec_ipu_id = 0,
+	.sec_disp_id = 0,
+#endif
 };
 
 static struct max8903_pdata charger1_data = {
