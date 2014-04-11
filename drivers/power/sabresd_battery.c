@@ -286,7 +286,7 @@ u32 calibration_voltage(struct max8903_data *data)
 #endif
 static void max8903_battery_update_status(struct max8903_data *data)
 {
-	int temp = 0;
+	int temp = 3800;
 	static int temp_last;
 	bool changed_flag;
 	changed_flag = false;
@@ -468,7 +468,8 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
 	struct max8903_data *data = _data;
 	struct max8903_pdata *pdata = data->pdata;
 	bool usb_in;
-	usb_in = gpio_get_value(pdata->uok) ? false : true;
+	//usb_in = gpio_get_value(pdata->uok) ? false : true;
+	usb_in = true;
 	if (usb_in == data->usb_in)
 		return IRQ_HANDLED;
 
