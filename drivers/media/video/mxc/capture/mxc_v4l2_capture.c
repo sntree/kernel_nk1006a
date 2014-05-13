@@ -327,8 +327,8 @@ static int mxc_v4l2_prepare_bufs(cam_data *cam, struct v4l2_buffer *buf)
 	if (buf->index < 0 || buf->index >= FRAME_NUM || buf->length <
 			cam->v2f.fmt.pix.sizeimage) {
 		pr_err("ERROR: v4l2 capture: mxc_v4l2_prepare_bufs buffers "
-			"not allocated,index=%d, length=%d\n", buf->index,
-			buf->length);
+			"not allocated,index=%d, length=%d %d\n", buf->index,
+			buf->length, cam->v2f.fmt.pix.sizeimage);
 		return -EINVAL;
 	}
 

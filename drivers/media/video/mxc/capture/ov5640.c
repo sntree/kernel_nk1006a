@@ -33,6 +33,10 @@
 #include "mxc_v4l2_capture.h"
 #include "fsl_csi.h"
 
+#ifdef CONFIG_MACH_MX6Q_NK1006A
+#define NK1006A_IRCAMERA
+#endif
+
 #define OV5640_VOLTAGE_ANALOG               2800000
 #define OV5640_VOLTAGE_DIGITAL_CORE         1500000
 #define OV5640_VOLTAGE_DIGITAL_IO           1800000
@@ -588,6 +592,7 @@ static struct i2c_driver ov5640_i2c_driver = {
 
 static s32 ov5640_write_reg(u16 reg, u8 val)
 {
+#ifndef NK1006A_IRCAMERA
 	u8 au8Buf[3] = {0};
 
 	au8Buf[0] = reg >> 8;
@@ -599,12 +604,13 @@ static s32 ov5640_write_reg(u16 reg, u8 val)
 			__func__, reg, val);
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
 static s32 ov5640_read_reg(u16 reg, u8 *val)
 {
+#ifndef NK1006A_IRCAMERA
 	u8 au8RegBuf[2] = {0};
 	u8 u8RdVal = 0;
 
@@ -626,6 +632,9 @@ static s32 ov5640_read_reg(u16 reg, u8 *val)
 	*val = u8RdVal;
 
 	return u8RdVal;
+#endif
+
+	return 0;
 }
 
 static void ov5640_soft_reset(void)
@@ -678,12 +687,15 @@ static int ov5640_get_sysclk(void)
 
 	temp1 = ov5640_read_reg(0x3034, &regval);
 	temp2 = temp1 & 0x0f;
+
+#ifndef NK1006A_IRCAMERA	
 	if (temp2 == 8 || temp2 == 10) {
 		Bit_div2x = temp2 / 2;
 	} else {
 		pr_err("ov5640: unsupported bit mode %d\n", temp2);
 		return -1;
 	}
+#endif
 
 	temp1 = ov5640_read_reg(0x3035, &regval);
 	SysDiv = temp1 >> 4;
@@ -1227,6 +1239,10 @@ static int ioctl_g_ifparm(struct v4l2_int_device *s, struct v4l2_ifparm *p)
 	p->u.bt656.clock_min = OV5640_XCLK_MIN;
 	p->u.bt656.clock_max = OV5640_XCLK_MAX;
 	p->u.bt656.bt_sync_correct = 1;  /* Indicate external vsync */
+#ifdef NK1006A_IRCAMERA	
+	p->u.bt656.nobt_hs_inv = 1;
+	p->u.bt656.nobt_vs_inv = 1;
+#endif
 
 	return 0;
 }
@@ -1377,10 +1393,12 @@ static int ioctl_s_parm(struct v4l2_int_device *s, struct v4l2_streamparm *a)
 			return -EINVAL;
 		}
 
+#ifndef NK1006A_IRCAMERA
 		ret = ov5640_change_mode(frame_rate,
 				a->parm.capture.capturemode);
 		if (ret < 0)
 			return ret;
+#endif
 
 		sensor->streamcap.timeperframe = *timeperframe;
 		sensor->streamcap.capturemode = a->parm.capture.capturemode;
@@ -1698,8 +1716,10 @@ static struct v4l2_int_ioctl_desc ov5640_ioctl_desc[] = {
 				(v4l2_int_ioctl_func *)ioctl_g_needs_reset}, */
 /*	{vidioc_int_reset_num, (v4l2_int_ioctl_func *)ioctl_reset}, */
 	{vidioc_int_init_num, (v4l2_int_ioctl_func *)ioctl_init},
+#ifndef NK1006A_IRCAMERA	
 	{vidioc_int_enum_fmt_cap_num,
 				(v4l2_int_ioctl_func *)ioctl_enum_fmt_cap},
+#endif		
 /*	{vidioc_int_try_fmt_cap_num,
 				(v4l2_int_ioctl_func *)ioctl_try_fmt_cap}, */
 	{vidioc_int_g_fmt_cap_num, (v4l2_int_ioctl_func *)ioctl_g_fmt_cap},
@@ -1826,6 +1846,8 @@ static int ov5640_probe(struct i2c_client *client,
 #ifdef CONFIG_SOC_IMX6SL
 	csi_enable_mclk(CSI_MCLK_I2C, true, true);
 #endif
+
+#ifndef NK1006A_IRCAMERA 	
 	retval = ov5640_read_reg(OV5640_CHIP_ID_HIGH_BYTE, &chip_id_high);
 	if (retval < 0 || chip_id_high != 0x56) {
 		pr_warning("camera ov5640 is not found\n");
@@ -1838,6 +1860,7 @@ static int ov5640_probe(struct i2c_client *client,
 		retval = -ENODEV;
 		goto err4;
 	}
+#endif
 
 	if (plat_data->pwdn)
 		plat_data->pwdn(1);

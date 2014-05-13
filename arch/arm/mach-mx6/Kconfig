@@ -214,6 +214,9 @@ config MACH_MX6Q_SABRESD
 	  Include support for i.MX 6Quad SABRE SD platform. This includes specific
 	  configurations for the board and its peripherals.
 
+config MACH_MX6Q_NK1006A
+	bool "Guide NK1006A mx6q based platform"
+
 config MACH_MX6Q_SABREAUTO
 	bool "Support i.MX 6Quad SABRE Auto platform"
 	select ARCH_MX6Q

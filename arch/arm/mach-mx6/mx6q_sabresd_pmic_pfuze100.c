@@ -31,7 +31,9 @@
 #include "regs-anadig.h"
 #include "cpu_op-mx6.h"
 
+#ifdef CONFIG_MACH_MX6Q_NK1006A
 #define MX6Q_NK1006A
+#endif
 
 /*
  * Convenience conversion.

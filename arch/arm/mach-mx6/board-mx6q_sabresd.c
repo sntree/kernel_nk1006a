@@ -2290,6 +2290,10 @@ static void __init mx6_sabresd_board_init(void)
 	imx6q_add_perfmon(0);
 	imx6q_add_perfmon(1);
 	imx6q_add_perfmon(2);
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	mx6q_ir_camera_power_control(1, 1);
+#endif
+
 }
 
 extern void __iomem *twd_base;

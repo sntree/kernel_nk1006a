@@ -20,7 +20,9 @@
 #define _BOARD_MX6DL_SABRESD_H
 #include <mach/iomux-mx6dl.h>
 
+#ifdef CONFIG_MACH_MX6DL_NK1006A
 #define MX6DL_NK1006A
+#endif
 
 static iomux_v3_cfg_t mx6dl_sabresd_pads[] = {
 	/* AUDMUX */
