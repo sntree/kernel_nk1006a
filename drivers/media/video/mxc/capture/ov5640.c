@@ -503,9 +503,15 @@ static struct reg_value ov5640_setting_15fps_QSXGA_2592_1944[] = {
 
 static struct ov5640_mode_info ov5640_mode_info_data[2][ov5640_mode_MAX + 1] = {
 	{
+#ifdef NK1006A_IRCAMERA
+		{ov5640_mode_VGA_640_480,      640,  968,
+		ov5640_setting_15fps_VGA_640_480,
+		ARRAY_SIZE(ov5640_setting_15fps_VGA_640_480)},
+#else
 		{ov5640_mode_VGA_640_480,      640,  480,
 		ov5640_setting_15fps_VGA_640_480,
 		ARRAY_SIZE(ov5640_setting_15fps_VGA_640_480)},
+#endif
 		{ov5640_mode_QVGA_320_240,     320,  240,
 		ov5640_setting_15fps_QVGA_320_240,
 		ARRAY_SIZE(ov5640_setting_15fps_QVGA_320_240)},
@@ -532,9 +538,15 @@ static struct ov5640_mode_info ov5640_mode_info_data[2][ov5640_mode_MAX + 1] = {
 		ARRAY_SIZE(ov5640_setting_15fps_XGA_1024_768)},
 	},
 	{
+#ifdef NK1006A_IRCAMERA
+		{ov5640_mode_VGA_640_480,      640,  968,
+		ov5640_setting_30fps_VGA_640_480,
+		ARRAY_SIZE(ov5640_setting_30fps_VGA_640_480)},
+#else
 		{ov5640_mode_VGA_640_480,      640,  480,
 		ov5640_setting_30fps_VGA_640_480,
 		ARRAY_SIZE(ov5640_setting_30fps_VGA_640_480)},
+#endif
 		{ov5640_mode_QVGA_320_240,     320,  240,
 		ov5640_setting_30fps_QVGA_320_240,
 		ARRAY_SIZE(ov5640_setting_30fps_QVGA_320_240)},
@@ -1010,7 +1022,11 @@ static int ov5640_init_mode(void)
 	/* turn off night mode */
 	night_mode = 0;
 	ov5640_data.pix.width = 640;
+#ifdef NK1006A_IRCAMERA
+	ov5640_data.pix.height = 968;
+#else
 	ov5640_data.pix.height = 480;
+#endif
 err:
 	return retval;
 }
@@ -1775,7 +1791,11 @@ static int ov5640_probe(struct i2c_client *client,
 	ov5640_data.i2c_client = client;
 	ov5640_data.pix.pixelformat = V4L2_PIX_FMT_YUYV;
 	ov5640_data.pix.width = 640;
+#ifdef NK1006A_IRCAMERA
+	ov5640_data.pix.height = 968;
+#else
 	ov5640_data.pix.height = 480;
+#endif
 	ov5640_data.streamcap.capability = V4L2_MODE_HIGHQUALITY |
 					   V4L2_CAP_TIMEPERFRAME;
 	ov5640_data.streamcap.capturemode = 0;
