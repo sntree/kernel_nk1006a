@@ -1380,6 +1380,17 @@ static void mx6_reset_mipi_dsi(void)
 	msleep(120);
 }
 
+/* LCD reset */
+static void lcd_rest(void)
+{
+	gpio_request(SABRESD_DISP0_RST_B, "lcd-reset");
+	gpio_direction_output(SABRESD_DISP0_RST_B, 1);
+	msleep(5);
+	gpio_set_value(SABRESD_DISP0_RST_B, 0);
+	msleep(5);
+	gpio_set_value(SABRESD_DISP0_RST_B, 1);
+}
+
 static struct mipi_dsi_platform_data mipi_dsi_pdata = {
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	.ipu_id		= 1,
@@ -1406,6 +1417,14 @@ static struct ipuv3_fb_platform_data sabresd_fb_data[] = {
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "TRULY-WVGA",
 	.default_bpp = 32,
+	.int_clk = false,
+	.late_init = false,
+	},
+	{
+	.disp_dev = "lcd",
+	.interface_pix_fmt = IPU_PIX_FMT_BGR24,
+	.mode_str = "E-LCD",
+	.default_bpp = 24,
 	.int_clk = false,
 	.late_init = false,
 	},
@@ -1493,7 +1512,11 @@ static struct fsl_mxc_hdmi_core_platform_data hdmi_core_data = {
 static struct fsl_mxc_lcd_platform_data lcdif_data = {
 	.ipu_id = 0,
 	.disp_id = 0,
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	.default_ifmt = IPU_PIX_FMT_BGR24,
+#else	
 	.default_ifmt = IPU_PIX_FMT_RGB565,
+#endif	
 };
 
 static struct fsl_mxc_ldb_platform_data ldb_data = {
@@ -2292,6 +2315,7 @@ static void __init mx6_sabresd_board_init(void)
 	imx6q_add_perfmon(2);
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	mx6q_ir_camera_power_control(1, 1);
+	lcd_rest();
 #endif
 
 }
