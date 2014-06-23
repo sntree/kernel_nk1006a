@@ -1567,6 +1567,43 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
 	}
 }
 
+/**
+ * 	when define SWAP_FB_MAIN_AUX, fb id is mapped like below
+ * 		0 --> 2
+ * 		1 --> 3
+ * 		2 --> 0
+ * 		3 --> 1
+ */
+#define SWAP_FB_MAIN_AUX
+
+static int remap_fb_id(int id)
+{
+	switch (id)
+	{
+	case 0:
+		id = 2;
+		break;
+
+	case 1:
+		id = 3;
+		break;
+
+	case 2:
+		id = 0;
+		break;
+
+	case 3:
+		id = 1;
+
+		break;
+
+	default:
+		break;
+	}
+
+	return id;
+}
+
 static int do_register_framebuffer(struct fb_info *fb_info)
 {
 	int i;
@@ -1592,7 +1629,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
 	mutex_init(&fb_info->mm_lock);
 
 	fb_info->dev = device_create(fb_class, fb_info->device,
-				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+				     MKDEV(FB_MAJOR, i), NULL, "fb%d", remap_fb_id(i));
 	if (IS_ERR(fb_info->dev)) {
 		/* Not fatal */
 		printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
