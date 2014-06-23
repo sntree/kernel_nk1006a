@@ -1574,10 +1574,20 @@ static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
  * 		2 --> 0
  * 		3 --> 1
  */
-#define SWAP_FB_MAIN_AUX
+static int swap_fb_main_aux = 0;
+
+static int __init swap_fb_main_aux_enable(char *str)
+{
+	swap_fb_main_aux = 1;
+	return 1;
+}
+__setup("swap_fb_main_aux", swap_fb_main_aux_enable);
 
 static int remap_fb_id(int id)
 {
+	if (!swap_fb_main_aux)
+		return id;
+
 	switch (id)
 	{
 	case 0:
