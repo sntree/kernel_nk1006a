@@ -879,9 +879,9 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 		I2C_BOARD_INFO("wm89**", 0x1a),
 	},
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
-	{
-		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
-	},
+//	{
+//		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+//	},
 	
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
@@ -901,10 +901,14 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 #if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
+//	{
+//		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+//	},
+#endif
 	{
 		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
 	},
-#endif
+	
 	{
 		I2C_BOARD_INFO("ov5640_mipi", 0x3c),
 		.platform_data = (void *)&mipi_csi2_data,
@@ -1383,6 +1387,12 @@ static void mx6_reset_mipi_dsi(void)
 /* LCD reset */
 static void lcd_rest(void)
 {
+#if OLED_DISPLAY
+	gpio_request(SABRESD_OLED_POWER_ENABLE, "oled-power");
+	gpio_direction_output(SABRESD_OLED_POWER_ENABLE, 1);
+	msleep(5);
+#endif
+
 	gpio_request(SABRESD_DISP0_RST_B, "lcd-reset");
 	gpio_direction_output(SABRESD_DISP0_RST_B, 1);
 	msleep(5);
@@ -1417,7 +1427,7 @@ static struct ipuv3_fb_platform_data sabresd_fb_data[] = {
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "TRULY-WVGA",
 	.default_bpp = 32,
-	.int_clk = false,
+	.int_clk = true,
 	.late_init = false,
 	},
 	{
@@ -1434,7 +1444,7 @@ static struct ipuv3_fb_platform_data sabresd_fb_data[] = {
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "1920x1080M@60",
 	.default_bpp = 32,
-	.int_clk = false,
+	.int_clk = true,
 	.late_init = false,
 	}, 
 	{
@@ -1571,7 +1581,7 @@ static struct ion_platform_data imx_ion_data = {
 		.id = 0,
 		.type = ION_HEAP_TYPE_CARVEOUT,
 		.name = "vpu_ion",
-		.size = SZ_16M,
+		.size = SZ_32M,
 		.cacheable = 1,
 		},
 	},

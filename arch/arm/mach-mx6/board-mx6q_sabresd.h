@@ -39,7 +39,7 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_GPIO_7__GPIO_1_7,		/* NERR */
 
 #ifdef MX6Q_NK1006A
-	MX6Q_PAD_GPIO_7__GPIO_1_8,   /* MIPI-LCD DISP_PWR_EN Signal */
+	MX6Q_PAD_GPIO_8__GPIO_1_8,   /* MIPI-LCD DISP_PWR_EN Signal */
 #endif 
 
 	/* CCM  */
