@@ -1043,7 +1043,7 @@ static void goodix_ts_work_func(struct work_struct *work)
     s32 ret = -1;
     struct goodix_ts_data *ts = NULL;
 
-	GTP_INFO("goodix_ts_work_func in .........................!");
+	//GTP_INFO("goodix_ts_work_func in .........................!");
 
 #if GTP_COMPATIBLE_MODE
     u8 rqst_buf[3] = {0x80, 0x43};  // for GT9XXF
