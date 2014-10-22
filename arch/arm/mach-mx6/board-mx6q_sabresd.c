@@ -879,9 +879,9 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 		I2C_BOARD_INFO("wm89**", 0x1a),
 	},
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
-//	{
-//		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
-//	},
+	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
 	
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
@@ -905,10 +905,7 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 //		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
 //	},
 #endif
-	{
-		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
-	},
-	
+
 	{
 		I2C_BOARD_INFO("ov5640_mipi", 0x3c),
 		.platform_data = (void *)&mipi_csi2_data,
@@ -950,11 +947,13 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
 		I2C_BOARD_INFO("isl29023", 0x44),
 		.irq  = gpio_to_irq(SABRESD_ALS_INT),
 		.platform_data = &ls_data,
-	}, 
+	},
+	/* not used for both SabreSd and NK1006A 
 	{
 		I2C_BOARD_INFO("elan-touch", 0x10),
 		.irq = gpio_to_irq(SABRESD_ELAN_INT),
 	},
+	*/
 #endif
 
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
@@ -2187,6 +2186,7 @@ static void __init mx6_sabresd_board_init(void)
 	imx_add_viv_gpu(&imx6_gpu_data, &imx6q_gpu_pdata);
 	imx6q_sabresd_init_usb();
 	
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A) // disable SATA
 	/* SATA is not supported by MX6DL/Solo */
 	if (cpu_is_mx6q()) {
 #ifdef CONFIG_SATA_AHCI_PLATFORM
@@ -2196,6 +2196,7 @@ static void __init mx6_sabresd_board_init(void)
 			(void __iomem *)ioremap(MX6Q_SATA_BASE_ADDR, SZ_4K));
 #endif
 	}
+#endif /* NK1006A */
 
 	imx6q_add_vpu();
 	imx6q_init_audio();
@@ -2256,6 +2257,7 @@ static void __init mx6_sabresd_board_init(void)
 			imx6dl_add_imx_epdc(&epdc_data);
 		}
 	}
+
 	/*
 	ret = gpio_request_array(mx6q_sabresd_flexcan_gpios,
 			ARRAY_SIZE(mx6q_sabresd_flexcan_gpios));
@@ -2289,16 +2291,20 @@ static void __init mx6_sabresd_board_init(void)
 	gpio_set_value(SABRESD_AUX_5V_EN, 1);
 
 	gps_power_on(true);
+
 	/* Register charger chips */
 	platform_device_register(&sabresd_max8903_charger_1);
 	pm_power_off = mx6_snvs_poweroff;
 	imx6q_add_busfreq();
 
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A) // disable PCIe
 	/* Add PCIe RC interface support
 	 * uart5 has pin mux with pcie. or you will use uart5 or use pcie
 	 */
 	if (!uart5_enabled)
 		imx6q_add_pcie(&mx6_sabresd_pcie_data);
+#endif
+		
 	if (cpu_is_mx6dl()) {
 		mxc_iomux_v3_setup_multiple_pads(mx6dl_arm2_elan_pads,
 						ARRAY_SIZE(mx6dl_arm2_elan_pads));
