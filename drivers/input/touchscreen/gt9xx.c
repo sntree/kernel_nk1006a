@@ -3367,8 +3367,8 @@ static struct i2c_driver goodix_ts_driver = {
     .remove     = goodix_ts_remove,
 //#ifndef CONFIG_HAS_EARLYSUSPEND
 #ifdef CONFIG_HAS_EARLYSUSPEND
-    .suspend    = goodix_ts_early_suspend,
-    .resume     = goodix_ts_late_resume,
+//    .suspend    = goodix_ts_early_suspend,
+//    .resume     = goodix_ts_late_resume,
 #endif
     .id_table   = goodix_ts_id,
     .driver = {
