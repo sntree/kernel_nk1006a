@@ -85,21 +85,36 @@
 #include "board-mx6dl_sabresd.h"
 #include <mach/imx_rfkill.h>
 
+//#define OLED_DISPLAY
+//#define C_KEY_USE 1
+
 #define SABRESD_USR_DEF_GRN_LED	IMX_GPIO_NR(1, 1)
-#define SABRESD_BT_RESET	IMX_GPIO_NR(1, 2)
 #define SABRESD_USR_DEF_RED_LED	IMX_GPIO_NR(1, 2)
 #define SABRESD_VOLUME_UP	IMX_GPIO_NR(1, 4)
 #define SABRESD_VOLUME_DN	IMX_GPIO_NR(1, 5)
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 #define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(7, 11)
+#define SABRESD_BT_RESET	IMX_GPIO_NR(4, 7)
 #define SABRESD_CSI0_PWN	IMX_GPIO_NR(2, 25)
 #define SABRESD_CSI0_RST	IMX_GPIO_NR(5, 20)
 #else
 #define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(1, 9)
+#define SABRESD_BT_RESET	IMX_GPIO_NR(1, 2)
 #define SABRESD_CSI0_PWN	IMX_GPIO_NR(1, 16)
 #define SABRESD_CSI0_RST	IMX_GPIO_NR(1, 17)
 #endif
+
+#ifdef C_KEY_USE
+#define SABRESD_MYKEY_1	IMX_GPIO_NR(3, 27)
+#define SABRESD_MYKEY_2	IMX_GPIO_NR(3, 30)
+#endif
+#ifdef OLED_DISPLAY
+#define SABRESD_OLED_POWER_ENABLE	IMX_GPIO_NR(1, 18)
+#else
 #define SABRESD_ACCL_INT	IMX_GPIO_NR(1, 18)
+#endif
+
+
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 #define SABRESD_MIPICSI_PWN	IMX_GPIO_NR(4, 5)
 #define SABRESD_MIPICSI_RST	IMX_GPIO_NR(7, 13)
@@ -267,13 +282,23 @@ extern bool enet_to_gpio_6;
 static int max17135_regulator_init(struct max17135 *max17135);
 
 static const struct esdhc_platform_data mx6q_sabresd_sd2_data __initconst = {
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	.always_present = 1,
+	.keep_power_at_suspend = 1,
+	.support_8bit = 0,
+
+	.cd_type = ESDHC_CD_PERMANENT,
+	.support_18v = 1,
+#else
 	.cd_gpio = SABRESD_SD2_CD,
 	.wp_gpio = SABRESD_SD2_WP,
 	.keep_power_at_suspend = 1,
 	.support_8bit = 1,
-	.delay_line = 0,
+
 	.cd_type = ESDHC_CD_CONTROLLER,
 	.runtime_pm = 1,
+#endif
+	.delay_line = 0,
 };
 
 static const struct esdhc_platform_data mx6q_sabresd_sd3_data __initconst = {
@@ -906,6 +931,12 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 //	},
 #endif
 
+#ifdef OLED_DISPLAY
+	{
+		I2C_BOARD_INFO("OLED-I2C", 0x3e),
+	},
+#endif
+
 	{
 		I2C_BOARD_INFO("ov5640_mipi", 0x3c),
 		.platform_data = (void *)&mipi_csi2_data,
@@ -1386,7 +1417,7 @@ static void mx6_reset_mipi_dsi(void)
 /* LCD reset */
 static void lcd_rest(void)
 {
-#if OLED_DISPLAY
+#ifdef OLED_DISPLAY
 	gpio_request(SABRESD_OLED_POWER_ENABLE, "oled-power");
 	gpio_direction_output(SABRESD_OLED_POWER_ENABLE, 1);
 	msleep(5);
@@ -1763,8 +1794,10 @@ static struct platform_device imx6q_gpio_led_device = {
  */
 static void __init imx6q_add_device_gpio_leds(void)
 {
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	if (!uart5_enabled)
 		platform_device_register(&imx6q_gpio_led_device);
+#endif		
 }
 #else
 static void __init imx6q_add_device_gpio_leds(void) {}
@@ -1796,6 +1829,10 @@ static struct gpio_keys_button new_sabresd_buttons[] = {
 	GPIO_BUTTON(SABRESD_VOLUME_UP, KEY_VOLUMEUP, 1, "volume-up", 0, 1),
 	GPIO_BUTTON(SABRESD_VOLUME_DN, KEY_VOLUMEDOWN, 1, "volume-down", 0, 1),
 	GPIO_BUTTON(SABRESD_POWER_OFF, KEY_POWER, 1, "power-key", 1, 1),
+#ifdef C_KEY_USE
+	GPIO_BUTTON(SABRESD_MYKEY_1, KEY_F11, 1, "gpio_key1", 0, 1),
+	GPIO_BUTTON(SABRESD_MYKEY_2, KEY_F12, 1, "gpio_key2", 0, 1),	
+#endif
 };
 
 static struct gpio_keys_platform_data new_sabresd_button_data = {
@@ -1830,6 +1867,11 @@ static void __init imx6q_add_device_buttons(void)
 	 *	3 Act as power key to let device suspend/resume
 	 *	4 Act screenshort(hold power key and volume down key for 2s)
 	 */
+#ifdef C_KEY_USE
+	 void __force __iomem *iomuxbase = (0x020E0000 + 0xF2000000);//yrh
+	 __raw_writel(0x5, iomuxbase + 0xCC);//yrh
+#endif
+
 	if (mx6q_revision() >= IMX_CHIP_REVISION_1_2 ||
 			mx6dl_revision() >= IMX_CHIP_REVISION_1_1)
 		platform_device_add_data(&sabresd_button_device,
@@ -1992,6 +2034,7 @@ static iomux_v3_cfg_t mx6q_uart5_pads[] = {
 	MX6Q_PAD_KEY_ROW4__UART5_CTS,
 	/* gpio for reset */
 	MX6Q_PAD_GPIO_2__GPIO_1_2,
+	MX6Q_PAD_KEY_ROW0__GPIO_4_7,
 };
 
 static iomux_v3_cfg_t mx6dl_uart5_pads[] = {
