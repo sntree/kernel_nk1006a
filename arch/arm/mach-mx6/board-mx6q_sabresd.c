@@ -905,10 +905,6 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 	},
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	{
-		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
-	},
-	
-	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
 		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT0),
 	},
@@ -925,11 +921,9 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 };
 
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
-#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
-//	{
-//		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
-//	},
-#endif
+	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
 
 #ifdef OLED_DISPLAY
 	{
