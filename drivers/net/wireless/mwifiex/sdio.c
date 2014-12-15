@@ -28,6 +28,9 @@
 #include "11n.h"
 #include "sdio.h"
 
+#define pr_debug printk
+#define pr_err   printk
+
 
 #define SDIO_VERSION	"1.0"
 
@@ -214,12 +217,26 @@ static int mwifiex_sdio_resume(struct device *dev)
 	return 0;
 }
 
+#define MARVELL_VENDOR_ID 0x02df
+
+/* Device ID for SD8777 */
+#define SDIO_DEVICE_ID_MARVELL_8777   (0x9110)
+/* Device ID for SD8786 */
+#define SDIO_DEVICE_ID_MARVELL_8786   (0x9116)
 /* Device ID for SD8787 */
 #define SDIO_DEVICE_ID_MARVELL_8787   (0x9119)
+/* Device ID for SD8797 */
+#define SDIO_DEVICE_ID_MARVELL_8797   (0x9129)
+/* Device ID for SD8897 */
+#define SDIO_DEVICE_ID_MARVELL_8897   (0x912d)
 
 /* WLAN IDs */
 static const struct sdio_device_id mwifiex_ids[] = {
-	{SDIO_DEVICE(SDIO_VENDOR_ID_MARVELL, SDIO_DEVICE_ID_MARVELL_8787)},
+	{SDIO_DEVICE(MARVELL_VENDOR_ID, SDIO_DEVICE_ID_MARVELL_8777)},
+	{SDIO_DEVICE(MARVELL_VENDOR_ID, SDIO_DEVICE_ID_MARVELL_8786)},
+	{SDIO_DEVICE(MARVELL_VENDOR_ID, SDIO_DEVICE_ID_MARVELL_8787)},
+	{SDIO_DEVICE(MARVELL_VENDOR_ID, SDIO_DEVICE_ID_MARVELL_8797)},
+	{SDIO_DEVICE(MARVELL_VENDOR_ID, SDIO_DEVICE_ID_MARVELL_8897)},
 	{},
 };
 

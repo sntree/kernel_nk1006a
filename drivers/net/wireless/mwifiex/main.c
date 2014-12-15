@@ -393,9 +393,15 @@ static int mwifiex_init_hw_fw(struct mwifiex_adapter *adapter)
 	case SD8787_A1:
 		strcpy(fw_name, SD8787_AX_FW_NAME);
 		break;
+	case SD8777_A0:
+		strcpy(fw_name, SD8777_A0_FW_NAME);
+		break;
+		
 	default:
 		break;
 	}
+
+	printk("request fw %s for id %x\n", fw_name, adapter->revision_id);
 
 	err = request_firmware(&adapter->firmware, fw_name, adapter->dev);
 	if (err < 0) {

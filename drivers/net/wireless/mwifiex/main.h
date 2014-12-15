@@ -48,12 +48,15 @@ enum {
 
 #define DRV_MODE_STA       0x1
 
+#define SD8777_A0   0x10
+
 #define SD8787_W0   0x30
 #define SD8787_W1   0x31
 #define SD8787_A0   0x40
 #define SD8787_A1   0x41
 
 #define DEFAULT_FW_NAME "mrvl/sd8787_uapsta.bin"
+#define SD8777_A0_FW_NAME "mrvl/sd8777_uapsta.bin"
 #define SD8787_W1_FW_NAME "mrvl/sd8787_uapsta_w1.bin"
 #define SD8787_AX_FW_NAME "mrvl/sd8787_uapsta.bin"
 
