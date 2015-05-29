@@ -95,6 +95,9 @@
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 #define OLED_DISPLAY
 #define C_KEY_USE 1
+#else
+#undef  OLED_DISPLAY
+#define C_KEY_USE 0
 #endif 
 
 #if C_KEY_USE
@@ -1595,6 +1598,7 @@ static void mx6_reset_mipi_dsi(void)
 	msleep(120);
 }
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 /* LCD reset */
 static void lcd_rest(void)
 {
@@ -1611,6 +1615,7 @@ static void lcd_rest(void)
 	msleep(5);
 	gpio_set_value(SABRESD_DISP0_RST_B, 1);
 }
+#endif
 
 static struct mipi_dsi_platform_data mipi_dsi_pdata = {
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
