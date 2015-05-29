@@ -513,4 +513,26 @@ config INPUT_ISL29023
 
 	  This driver can also be built as a module.  If so, the module
 	  will be called isl29023.
+
+config INPUT_TMP101
+	tristate "TI TMP101 Temprature sensor"
+	depends on I2C && SYSFS
+	help
+	  If you say yes here you get support for the TI TMP101 Temprature
+	  sensor.
+
+config INPUT_TSL2772
+	tristate "TAOS TSL2772 proximity and ambient light sensor"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you get support for the TAOS tsl2772,
+	  proximity and ambient light sensors.
+
+config INPUT_ROTARY_SWITCH
+	tristate "Rotary switch connected to GPIO pins"
+	depends on GPIOLIB && GENERIC_GPIO
+	help
+	  Say Y here to add support for rotary switch connected to GPIO lines.
+	
 endif

@@ -25,6 +25,23 @@
 #endif
 
 static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
+#ifdef MX6Q_NK1006A
+	/*user keys*/
+	MX6Q_PAD_EIM_BCLK__GPIO_6_31,
+	MX6Q_PAD_EIM_D17__GPIO_3_17,
+	MX6Q_PAD_EIM_D20__GPIO_3_20,
+	MX6Q_PAD_EIM_D26__GPIO_3_26,
+	MX6Q_PAD_EIM_D27__GPIO_3_27,
+	MX6Q_PAD_EIM_D30__GPIO_3_30,
+	MX6Q_PAD_EIM_D31__GPIO_3_31,
+	MX6Q_PAD_DI0_PIN4__GPIO_4_20,
+	/*NK9013A SPI*/
+	MX6Q_PAD_EIM_CS0__ECSPI2_SCLK,
+ 	MX6Q_PAD_EIM_CS1__ECSPI2_MOSI,
+ 	MX6Q_PAD_EIM_OE__ECSPI2_MISO,
+ 	MX6Q_PAD_EIM_RW__ECSPI2_SS0,
+#endif
+
 	/* AUDMUX */
 	MX6Q_PAD_CSI0_DAT4__AUDMUX_AUD3_TXC,
 	MX6Q_PAD_CSI0_DAT5__AUDMUX_AUD3_TXD,
@@ -47,10 +64,18 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_GPIO_3__CCM_CLKO2,		/* J5 - Camera MCLK */
 
 	/* ECSPI1 */
+#ifdef MX6Q_NK1006A
+	MX6Q_PAD_EIM_CS0__ECSPI2_SCLK,
+ 	MX6Q_PAD_EIM_CS1__ECSPI2_MOSI,
+ 	MX6Q_PAD_EIM_OE__ECSPI2_MISO,
+ 	MX6Q_PAD_EIM_RW__ECSPI2_SS0,
+#else
 	MX6Q_PAD_KEY_COL0__ECSPI1_SCLK,
 	MX6Q_PAD_KEY_ROW0__ECSPI1_MOSI,
 	MX6Q_PAD_KEY_COL1__ECSPI1_MISO,
 	MX6Q_PAD_KEY_ROW1__GPIO_4_9,
+#endif
+
 	/* ENET */
 	MX6Q_PAD_ENET_MDIO__ENET_MDIO,
 	MX6Q_PAD_ENET_MDC__ENET_MDC,
@@ -154,7 +179,9 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_DI0_PIN15__IPU1_DI0_PIN15,		/* DE */
 	MX6Q_PAD_DI0_PIN2__IPU1_DI0_PIN2,		/* HSync */
 	MX6Q_PAD_DI0_PIN3__IPU1_DI0_PIN3,		/* VSync */
+#ifndef MX6Q_NK1006A	
 	MX6Q_PAD_DI0_PIN4__IPU1_DI0_PIN4,		/* Contrast */
+#endif	
 	MX6Q_PAD_DISP0_DAT0__IPU1_DISP0_DAT_0,
 	MX6Q_PAD_DISP0_DAT1__IPU1_DISP0_DAT_1,
 	MX6Q_PAD_DISP0_DAT2__IPU1_DISP0_DAT_2,
@@ -208,9 +235,9 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 
 	/* USB OC pin */
 #ifndef MX6Q_NK1006A
-	MX6Q_PAD_EIM_D21__USBOH3_USBOTG_OC,
-#endif	
+	MX6Q_PAD_EIM_D21__USBOH3_USBOTG_OC,	
 	MX6Q_PAD_EIM_D30__USBOH3_USBH1_OC,
+#endif
 
 	/* USDHC2 */
 	MX6Q_PAD_SD2_CLK__USDHC2_CLK,
@@ -266,7 +293,9 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 	MX6Q_PAD_EIM_DA14__GPIO_3_14, /* FLT_2_B */
 
 	MX6Q_PAD_ENET_RXD0__GPIO_1_27, /* UOK_B */
+#ifndef MX6Q_NK1006A	
 	MX6Q_PAD_EIM_CS1__GPIO_2_24,   /* DOK_B */
+#endif
 
 	/* Audio Codec */
 	MX6Q_PAD_KEY_COL2__GPIO_4_10,		/* CODEC_PWR_EN */
@@ -299,7 +328,7 @@ static iomux_v3_cfg_t mx6q_sabresd_pads[] = {
 
 #ifdef MX6Q_NK1006A
 	MX6Q_PAD_CSI0_DATA_EN__GPIO_5_20,	/* csi0 reset */
-	MX6Q_PAD_EIM_OE__GPIO_2_25,		/* csi0 power enable */
+	//MX6Q_PAD_EIM_OE__GPIO_2_25,		/* csi0 power enable */
 #endif	
 };
 

@@ -58,6 +58,10 @@
 #include <sound/wm8962.h>
 #include <linux/mfd/mxc-hdmi-core.h>
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#include <linux/i2c/tsl2772.h>
+#endif
+
 #include <mach/common.h>
 #include <mach/hardware.h>
 #include <mach/mxc_dvfs.h>
@@ -85,17 +89,43 @@
 #include "board-mx6dl_sabresd.h"
 #include <mach/imx_rfkill.h>
 
-//#define OLED_DISPLAY
-//#define C_KEY_USE 1
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define OLED_DISPLAY
+#define C_KEY_USE 1
+
+#if C_KEY_USE
+#define SABRESD_MYKEY_1	IMX_GPIO_NR(3, 17)
+#define SABRESD_MYKEY_2	IMX_GPIO_NR(3, 20)
+#define SABRESD_MYKEY_3	IMX_GPIO_NR(3, 23)
+#define SABRESD_MYKEY_4	IMX_GPIO_NR(3, 26)
+#define SABRESD_MYKEY_5	IMX_GPIO_NR(3, 27)
+#define SABRESD_MYKEY_6	IMX_GPIO_NR(3, 30)
+#define SABRESD_MYKEY_7	IMX_GPIO_NR(3, 31)
+//#define SABRESD_MYKEY_8	IMX_GPIO_NR(6, 31)
+//#define SABRESD_MYKEY_9	IMX_GPIO_NR(2, 28)
+//#define SABRESD_MYKEY_10	IMX_GPIO_NR(3, 0)
+//#define SABRESD_MYKEY_11	IMX_GPIO_NR(5, 20)
+#define SABRESD_MYKEY_12	IMX_GPIO_NR(6, 9)
+#define SABRESD_MYKEY_13	IMX_GPIO_NR(4, 20)
+#define SABRESD_MYKEY_14	IMX_GPIO_NR(6, 10)
+#define SABRESD_MYKEY_15	IMX_GPIO_NR(1, 19)
+#define SABRESD_MYKEY_16	IMX_GPIO_NR(1, 4)
+#define SABRESD_MYKEY_17	IMX_GPIO_NR(1, 5)
+#define SABRESD_MYKEY_18	IMX_GPIO_NR(7, 12)
+#define SABRESD_MYKEY_19	IMX_GPIO_NR(3, 16)
+
+#endif
 
 #define SABRESD_USR_DEF_GRN_LED	IMX_GPIO_NR(1, 1)
 #define SABRESD_USR_DEF_RED_LED	IMX_GPIO_NR(1, 2)
 #define SABRESD_VOLUME_UP	IMX_GPIO_NR(1, 4)
 #define SABRESD_VOLUME_DN	IMX_GPIO_NR(1, 5)
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+
 #define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(7, 11)
-#define SABRESD_BT_RESET	IMX_GPIO_NR(4, 7)
+#define SABRESD_BT_RESET	IMX_GPIO_NR(1, 2)
 #define SABRESD_CSI0_PWN	IMX_GPIO_NR(2, 25)
+#define SABRESD_ECSPI2_CS0  IMX_GPIO_NR(2, 26)
 #define SABRESD_CSI0_RST	IMX_GPIO_NR(5, 20)
 #else
 #define SABRESD_MICROPHONE_DET	IMX_GPIO_NR(1, 9)
@@ -104,10 +134,6 @@
 #define SABRESD_CSI0_RST	IMX_GPIO_NR(1, 17)
 #endif
 
-#ifdef C_KEY_USE
-#define SABRESD_MYKEY_1	IMX_GPIO_NR(3, 27)
-#define SABRESD_MYKEY_2	IMX_GPIO_NR(3, 30)
-#endif
 #ifdef OLED_DISPLAY
 #define SABRESD_OLED_POWER_ENABLE	IMX_GPIO_NR(1, 18)
 #else
@@ -142,11 +168,19 @@
 
 #define SABRESD_GPS_EN	IMX_GPIO_NR(3, 0)
 #define SABRESD_DISP0_RST_B	IMX_GPIO_NR(3, 8)
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 #define SABRESD_ALS_INT		IMX_GPIO_NR(3, 9)
+#endif
 #define SABRESD_CHARGE_CHG_2_B	IMX_GPIO_NR(3, 13)
 #define SABRESD_CHARGE_FLT_2_B	IMX_GPIO_NR(3, 14)
 #define SABRESD_BAR0_INT	IMX_GPIO_NR(3, 15)
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#define SABRESD_eCOMPASS_INT	IMX_GPIO_NR(6, 11)
+#else
 #define SABRESD_eCOMPASS_INT	IMX_GPIO_NR(3, 16)
+#endif
+
 #define SABRESD_GPS_PPS		IMX_GPIO_NR(3, 18)
 #define SABRESD_PCIE_PWR_EN	IMX_GPIO_NR(3, 19)
 #define SABRESD_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
@@ -176,6 +210,7 @@
 #define SABRESD_DISP_RST_B	IMX_GPIO_NR(1, 7)
 #define SABRESD_DISP_PWR_EN	IMX_GPIO_NR(1, 8)
 #define SABRESD_CABC_EN0	IMX_GPIO_NR(6, 10)
+#define SABRESD_ALS_INT		IMX_GPIO_NR(2, 19) 
 #else
 #define SABRESD_CAP_TCH_INT0	IMX_GPIO_NR(6, 8)
 #define SABRESD_DISP_RST_B	IMX_GPIO_NR(6, 11)
@@ -261,6 +296,10 @@
 #define OBSRV_MUX1_MASK			0x3f
 #define OBSRV_MUX1_ENET_IRQ		0x9
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+extern void  imx6q_add_device_nk_gpios(void); //by  dsy
+#endif
+
 static struct clk *sata_clk;
 static struct clk *clko;
 static int mma8x5x_position;
@@ -278,6 +317,86 @@ extern char *soc_reg_id;
 extern char *pu_reg_id;
 extern int epdc_enabled;
 extern bool enet_to_gpio_6;
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+/******************* TAOS ALS/PRX Sensor ******************************/
+
+static struct regulator *tsl2772_vreg;
+
+static int	board_tsl2772_init()
+{
+	int ret;
+
+	printk(KERN_INFO "board_tmd27723_init CALLED\n");
+		/* enable light sensor intr */
+
+	ret = gpio_request(SABRESD_ALS_INT, "tsl2772_int");
+	
+	ret=gpio_direction_input(SABRESD_ALS_INT);
+	
+
+	return 0;
+	gpio_free(SABRESD_ALS_INT);
+	return ret;
+
+}
+
+static int board_tsl2772_power(struct device *dev, enum tsl2772_pwr_state state)
+{
+	int ret = 0;
+	
+	if (state == POWER_ON ) {
+		ret = gpio_request(SABRESD_ALS_INT,"tsl2772_int");
+		if (ret < 0) {
+			printk(dev, "%s: gpio request failed\n", __func__);
+		}
+
+		ret=gpio_direction_input(SABRESD_ALS_INT);
+		
+		
+	}	
+
+	return 0;
+
+}
+
+
+static void board_tsl2772_teardown(struct device *dev)
+{
+printk(KERN_INFO "board_tsl2772_teardow CALLED\n");
+
+	dev_dbg(dev, "%s\n", __func__);
+	gpio_free(SABRESD_ALS_INT);
+	if (tsl2772_vreg) {
+		regulator_put(tsl2772_vreg);
+		tsl2772_vreg = NULL;
+	}
+
+}
+
+struct tsl2772_i2c_platform_data tsl2772_data = {
+	.platform_power = board_tsl2772_power,
+	.platform_init = board_tsl2772_init,
+	.platform_teardown = board_tsl2772_teardown,
+	.prox_name = "tsl2772_proximity",
+	.als_name = "tsl2772_als",
+	.raw_settings = NULL,
+	.parameters = {
+		.prox_th_min = 255,
+		.prox_th_max = 480,
+		.als_gate = 10,
+	},
+	.als_can_wake = false,
+	.proximity_can_wake = true,
+};
+
+static struct platform_device mx6_taos_device = {
+	.name		= "TAOS_tsl2772",
+	.dev		= {
+	.platform_data	= &tsl2772_data,
+	},
+};
+#endif
 
 static int max17135_regulator_init(struct max17135 *max17135);
 
@@ -386,7 +505,11 @@ static struct fec_platform_data fec_data __initdata = {
 };
 
 static int mx6q_sabresd_spi_cs[] = {
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	SABRESD_ECSPI2_CS0,
+#else
 	SABRESD_ECSPI1_CS0,
+#endif	
 };
 
 static const struct spi_imx_master mx6q_sabresd_spi_data __initconst = {
@@ -428,10 +551,27 @@ static struct spi_board_info imx6_sabresd_spi_nor_device[] __initdata = {
 #endif
 };
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+static struct spi_board_info imx6_sabresd_spi_device[] __initdata = {
+	{
+		.modalias = "spidev",
+		.max_speed_hz = 20000000, /* max spi clock (SCK) speed in HZ */
+		.bus_num = 1,
+		.chip_select = 0,
+		.mode = SPI_MODE_0,
+	},
+};
+#endif
+
 static void spi_device_init(void)
 {
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	spi_register_board_info(imx6_sabresd_spi_device,
+  				ARRAY_SIZE(imx6_sabresd_spi_device));
+#else
 	spi_register_board_info(imx6_sabresd_spi_nor_device,
 				ARRAY_SIZE(imx6_sabresd_spi_nor_device));
+#endif
 }
 
 static struct imx_ssi_platform_data mx6_sabresd_ssi_pdata = {
@@ -905,19 +1045,35 @@ static struct i2c_board_info mxc_i2c0_board_info[] __initdata = {
 	},
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
+	
+	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
-		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT0),
+//		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT0),
+	},
+	{
+		I2C_BOARD_INFO("tmp101", 0x49),
+	},
+	{
+		I2C_BOARD_INFO("ds1339", 0x68),
+	},
+	{
+		I2C_BOARD_INFO("mag3110", 0x0e),
+		.irq = gpio_to_irq(SABRESD_eCOMPASS_INT),
+		.platform_data = (void *)&mag3110_position,
 	},
 #else	
 	{
 		I2C_BOARD_INFO("ov564x", 0x3c),
 		.platform_data = (void *)&camera_data,
 	},
-#endif	
 	{
 		I2C_BOARD_INFO("mma8x5x", 0x1c),
 		.platform_data = (void *)&mma8x5x_position,
 	},
+#endif	
+
 };
 
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
@@ -937,9 +1093,9 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 	},
 
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
-	{ 
+	/*{ 
 		I2C_BOARD_INFO("Goodix-TS", 0x5d),
-	},
+	},*/
 #else
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
@@ -954,11 +1110,12 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata = {
 };
 
 static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
+
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	{
 		I2C_BOARD_INFO("max17135", 0x48),
 		.platform_data = &max17135_pdata,
 	},
-#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	{
 		I2C_BOARD_INFO("egalax_ts", 0x4),
 		.irq = gpio_to_irq(SABRESD_CAP_TCH_INT1),
@@ -985,6 +1142,24 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata = {
 	{
 		I2C_BOARD_INFO("ov5640", 0x3c),//I2C_BOARD_INFO("ov5642", 0x3c),
 		.platform_data = (void *)&camera_data,
+	},
+	{ 
+		I2C_BOARD_INFO("Goodix-TS", 0x5d),
+	},
+	{
+		I2C_BOARD_INFO("tsl2772", (0x72>>1)),
+		.irq  = gpio_to_irq(SABRESD_ALS_INT),
+		.platform_data = &tsl2772_data,
+	},
+//	{
+//		I2C_BOARD_INFO("mma8x5x", 0x1c),
+//		.platform_data = (void *)&mma8x5x_position,
+//	},
+	{
+		I2C_BOARD_INFO("tmp101", 0x4a),
+	},
+	{
+		I2C_BOARD_INFO("tmp101", 0x48),
 	},
 #else
 	{
@@ -1395,12 +1570,22 @@ static struct imx_asrc_platform_data imx_asrc_data = {
 
 static void mx6_reset_mipi_dsi(void)
 {
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	gpio_set_value(SABRESD_DISP_PWR_EN, 1);
 	gpio_set_value(SABRESD_DISP_RST_B, 1);
 	udelay(10);
 	gpio_set_value(SABRESD_DISP_RST_B, 0);
 	udelay(50);
 	gpio_set_value(SABRESD_DISP_RST_B, 1);
+#else
+	gpio_request(SABRESD_DISP_RST_B, "MIPI-reset");
+	gpio_direction_output(SABRESD_DISP_RST_B, 1);
+	msleep(5);
+	gpio_set_value(SABRESD_DISP_RST_B, 0);
+	printk("MIPI_REST_1111111111111111111111111111111\n");
+	msleep(5);
+	gpio_set_value(SABRESD_DISP_RST_B, 1);
+#endif	
 
 	/*
 	 * it needs to delay 120ms minimum for reset complete
@@ -1638,6 +1823,21 @@ static void mx6q_sd_bt_reset(void)
 	msleep(100);
 }
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+static void mx6q_sd_wifi_reset(void)
+{
+	printk(KERN_INFO "mx6q_sd_wifi_reset");
+	gpio_request(SABRESD_BT_RESET, "bt-reset");
+	gpio_direction_output(SABRESD_BT_RESET, 0);
+	/* pull down reset pin at least >5ms */
+	mdelay(300);
+	/* pull up after power supply BT */
+	gpio_direction_output(SABRESD_BT_RESET, 1);
+//	gpio_free(SABRESD_BT_RESET);
+//	msleep(100);
+}
+#endif
+
 static int mx6q_sd_bt_power_change(int status)
 {
 	if (status)
@@ -1666,14 +1866,18 @@ static void sabresd_suspend_enter(void)
 {
 	/* suspend preparation */
 	/* Disable AUX 5V */
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)	
 	gpio_set_value(SABRESD_AUX_5V_EN, 0);
+#endif
 }
 
 static void sabresd_suspend_exit(void)
 {
 	/* resume restore */
 	/* Enable AUX 5V */
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)	
 	gpio_set_value(SABRESD_AUX_5V_EN, 1);
+#endif
 }
 static const struct pm_platform_data mx6q_sabresd_pm_data __initconst = {
 	.name = "imx_pm",
@@ -1820,12 +2024,32 @@ static struct gpio_keys_platform_data sabresd_button_data = {
 };
 
 static struct gpio_keys_button new_sabresd_buttons[] = {
-	GPIO_BUTTON(SABRESD_VOLUME_UP, KEY_VOLUMEUP, 1, "volume-up", 0, 1),
-	GPIO_BUTTON(SABRESD_VOLUME_DN, KEY_VOLUMEDOWN, 1, "volume-down", 0, 1),
-	GPIO_BUTTON(SABRESD_POWER_OFF, KEY_POWER, 1, "power-key", 1, 1),
-#ifdef C_KEY_USE
-	GPIO_BUTTON(SABRESD_MYKEY_1, KEY_F11, 1, "gpio_key1", 0, 1),
-	GPIO_BUTTON(SABRESD_MYKEY_2, KEY_F12, 1, "gpio_key2", 0, 1),	
+#if C_KEY_USE
+		GPIO_BUTTON(SABRESD_MYKEY_1, KEY_F1, 1, "gpio_up", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_2, KEY_F2, 1, "gpio_left", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_3, KEY_F3, 1, "gpio_down", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_4, KEY_F4, 1, "gpio_centry", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_5, KEY_F5, 1, "gpio_right", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_6, KEY_BACK, 1, "gpio_return", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_7, KEY_F7, 1, "gpio_menu", 0, 1),
+		//GPIO_BUTTON(SABRESD_MYKEY_8, KEY_F8, 1, "gpio_mode1", 0, 1),
+		//GPIO_BUTTON(SABRESD_MYKEY_9, KEY_F9, 1, "gpio_mode2", 0, 1),
+		//GPIO_BUTTON(SABRESD_MYKEY_10, KEY_F10, 1, "gpio_mode3", 0, 1),
+		//GPIO_BUTTON(SABRESD_MYKEY_11, KEY_F11, 1, "gpio_mode4", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_12, KEY_F12, 1, "gpio_record", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_13, BTN_1, 1, "gpio_define", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_14, KEY_F8, 1, "gpio_zoomin", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_15, BTN_3, 1, "gpio_picture", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_16, KEY_F9, 1, "gpio_zoomout", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_17, BTN_5, 1, "gpio_panel1", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_18, BTN_6, 1, "gpio_panel2", 0, 1),
+		GPIO_BUTTON(SABRESD_MYKEY_19, BTN_7, 1, "gpio_new", 0, 1),
+		
+		GPIO_BUTTON(SABRESD_POWER_OFF, KEY_POWER, 1, "power-key", 1, 1),
+#else
+		GPIO_BUTTON(SABRESD_VOLUME_UP, KEY_VOLUMEUP, 1, "volume-up", 0, 1),
+		GPIO_BUTTON(SABRESD_VOLUME_DN, KEY_VOLUMEDOWN, 1, "volume-down", 0, 1),
+		GPIO_BUTTON(SABRESD_POWER_OFF, KEY_POWER, 1, "power-key", 1, 1),
 #endif
 };
 
@@ -1839,6 +2063,14 @@ static struct platform_device sabresd_button_device = {
 	.id		= -1,
 	.num_resources  = 0,
 };
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+static struct platform_device sabresd_rotary_device = {
+	.name		= "ROTARY",
+	.id		= -1,
+	.num_resources  = 0,
+};
+#endif
 
 static void __init imx6q_add_device_buttons(void)
 {
@@ -1861,10 +2093,6 @@ static void __init imx6q_add_device_buttons(void)
 	 *	3 Act as power key to let device suspend/resume
 	 *	4 Act screenshort(hold power key and volume down key for 2s)
 	 */
-#ifdef C_KEY_USE
-	 void __force __iomem *iomuxbase = (0x020E0000 + 0xF2000000);//yrh
-	 __raw_writel(0x5, iomuxbase + 0xCC);//yrh
-#endif
 
 	if (mx6q_revision() >= IMX_CHIP_REVISION_1_2 ||
 			mx6dl_revision() >= IMX_CHIP_REVISION_1_1)
@@ -2112,6 +2340,11 @@ static void __init mx6_sabresd_board_init(void)
 	mx6q_sabresd_init_uart();
 	imx6x_add_ram_console();
 
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+	mx6q_sd_wifi_reset();//add sdio wifi reset
+	platform_device_register(&sabresd_rotary_device);
+#endif
+
 	/*add bt support*/
 	if (uart5_enabled) {
 		uart5_init();
@@ -2195,7 +2428,12 @@ static void __init mx6_sabresd_board_init(void)
 		mx6q_sabresd_init_pfuze100(SABRESD_PFUZE_INT);
 	}
 	/* SPI */
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)	
+	imx6q_add_ecspi(1, &mx6q_sabresd_spi_data);
+#else	
 	imx6q_add_ecspi(0, &mx6q_sabresd_spi_data);
+#endif
+	
 	spi_device_init();
 
 	imx6q_add_mxc_hdmi(&hdmi_data);
@@ -2248,8 +2486,10 @@ static void __init mx6_sabresd_board_init(void)
 	 * according to the content shown on the panel which
 	 * may cause annoying unstable backlight issue.
 	 */
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 	gpio_request(SABRESD_CABC_EN0, "cabc-en0");
 	gpio_direction_output(SABRESD_CABC_EN0, 0);
+#endif	
 	gpio_request(SABRESD_CABC_EN1, "cabc-en1");
 	gpio_direction_output(SABRESD_CABC_EN1, 0);
 
@@ -2323,9 +2563,11 @@ static void __init mx6_sabresd_board_init(void)
 		clk_set_parent(clko, clko2);
 
 	/* Enable Aux_5V */
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)		
 	gpio_request(SABRESD_AUX_5V_EN, "aux_5v_en");
 	gpio_direction_output(SABRESD_AUX_5V_EN, 1);
 	gpio_set_value(SABRESD_AUX_5V_EN, 1);
+#endif	
 
 	gps_power_on(true);
 
@@ -2370,7 +2612,9 @@ static void __init mx6_sabresd_board_init(void)
 	mx6q_ir_camera_power_control(1, 1);
 	lcd_rest();
 #endif
-
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)	
+	imx6q_add_device_nk_gpios();
+#endif
 }
 
 extern void __iomem *twd_base;

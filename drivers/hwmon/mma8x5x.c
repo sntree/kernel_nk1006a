@@ -157,6 +157,7 @@ static char *mma8x5x_names[] = {
 	"mma8652",
 	"mma8653",
 };
+#if !defined(MX6Q_NK1006A) && !defined(MX6DL_NK1006A)
 static int mma8x5x_position_setting[8][3][3] = {
 	{ { 0,	-1, 0  }, { 1,	0,  0	   }, { 0, 0, 1	     } },
 	{ { -1, 0,  0  }, { 0,	-1, 0	   }, { 0, 0, 1	     } },
@@ -168,6 +169,20 @@ static int mma8x5x_position_setting[8][3][3] = {
 	{ { 0,	1,  0  }, { 1,	0,  0	   }, { 0, 0, -1     } },
 	{ { 1,	0,  0  }, { 0,	-1, 0	   }, { 0, 0, -1     } },
 };
+#else
+static int mma8x5x_position_setting[8][3][3] = {
+
+	{ { -1, 0,  0  }, { 0,	1,  0	   }, { 0, 0, -1     } },
+	{ { 0,	1,  0  }, { 1,	0,  0	   }, { 0, 0, -1     } },
+	{ { 1,	0,  0  }, { 0,	-1, 0	   }, { 0, 0, -1     } },
+	{ { 0,	-1, 0  }, { -1, 0,  0	   }, { 0, 0, -1     } },
+	
+	{ { 1, 0,  0  }, { 0,	1, 0	   }, { 0, 0, 1	     } },
+	{ { 0,	1,  0  }, { -1, 0,  0	   }, { 0, 0, 1	     } },
+	{ { -1,	0,  0  }, { 0,	-1,  0	   }, { 0, 0, 1	     } },
+	{ { 0,	-1, 0  }, { 1,	0,  0	   }, { 0, 0, 1	     } },
+};
+#endif
 
 static int mma8x5x_data_convert(struct mma8x5x_data *pdata,
 		struct mma8x5x_data_axis *axis_data)

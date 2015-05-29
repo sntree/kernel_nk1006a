@@ -39,3 +39,4 @@ obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
 obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
 obj-$(CONFIG_BATTERY_MAX17085)	+= max17085_battery.o
 obj-$(CONFIG_SABRESD_MAX8903)   += sabresd_battery.o
+obj-y   += bq34z100_onewire.o
