@@ -58,9 +58,7 @@
 #include <sound/wm8962.h>
 #include <linux/mfd/mxc-hdmi-core.h>
 
-#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
-#include <linux/i2c/tsl2772.h>
-#endif
+
 
 #include <mach/common.h>
 #include <mach/hardware.h>
@@ -87,11 +85,17 @@
 #include "cpu_op-mx6.h"
 #include "board-mx6q_sabresd.h"
 #include "board-mx6dl_sabresd.h"
+
 #include <mach/imx_rfkill.h>
+
+#if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
+#include <linux/i2c/tsl2772.h>
+#endif
 
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)
 #define OLED_DISPLAY
 #define C_KEY_USE 1
+#endif 
 
 #if C_KEY_USE
 #define SABRESD_MYKEY_1	IMX_GPIO_NR(3, 17)
@@ -115,6 +119,7 @@
 #define SABRESD_MYKEY_19	IMX_GPIO_NR(3, 16)
 
 #endif
+
 
 #define SABRESD_USR_DEF_GRN_LED	IMX_GPIO_NR(1, 1)
 #define SABRESD_USR_DEF_RED_LED	IMX_GPIO_NR(1, 2)
@@ -336,9 +341,8 @@ static int	board_tsl2772_init()
 	
 
 	return 0;
-	gpio_free(SABRESD_ALS_INT);
-	return ret;
-
+	//gpio_free(SABRESD_ALS_INT);
+	//return ret;
 }
 
 static int board_tsl2772_power(struct device *dev, enum tsl2772_pwr_state state)
@@ -348,12 +352,10 @@ static int board_tsl2772_power(struct device *dev, enum tsl2772_pwr_state state)
 	if (state == POWER_ON ) {
 		ret = gpio_request(SABRESD_ALS_INT,"tsl2772_int");
 		if (ret < 0) {
-			printk(dev, "%s: gpio request failed\n", __func__);
+			dev_dbg(dev, "%s: gpio request failed\n", __func__);
 		}
 
-		ret=gpio_direction_input(SABRESD_ALS_INT);
-		
-		
+		ret=gpio_direction_input(SABRESD_ALS_INT);				
 	}	
 
 	return 0;
@@ -2613,7 +2615,7 @@ static void __init mx6_sabresd_board_init(void)
 	lcd_rest();
 #endif
 #if defined(MX6Q_NK1006A) || defined(MX6DL_NK1006A)	
-	imx6q_add_device_nk_gpios();
+	//imx6q_add_device_nk_gpios();
 #endif
 }
 
