@@ -1449,6 +1449,22 @@ static int mxcfb_ioctl(struct fb_info *fbi, unsigned int cmd, unsigned long arg)
 	return retval;
 }
 
+/**
+	ipu id/di for main display which ipu will not close
+*/
+static int main_ipu_id = -1;
+static int main_ipu_di = -1;
+
+static int __init main_display_id_setup(char *str)
+{
+	int id, di;
+	if (sscanf("%d,%d", str, &id, &di) == 2) {
+		main_ipu_id=id;
+		main_ipu_di=di;
+	}
+	return 1;
+}
+__setup("main_display_id=", main_display_id_setup);
 /*
  * mxcfb_blank():
  *      Blank the display.
@@ -1459,6 +1475,10 @@ static int mxcfb_blank(int blank, struct fb_info *info)
 	int ret = 0;
 
 	dev_dbg(info->device, "blank = %d\n", blank);
+	if (mxc_fbi->ipu_id == main_ipu_id && mxc_fbi->ipu_di == main_ipu_di && blank == FB_BLANK_POWERDOWN) {
+		printk("do nothing for MAIN display\n");
+		return 0;
+	}
 
 	if (mxc_fbi->cur_blank == blank)
 		return 0;

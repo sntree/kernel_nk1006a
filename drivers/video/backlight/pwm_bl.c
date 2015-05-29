@@ -66,17 +66,37 @@ static int pwm_backlight_get_brightness(struct backlight_device *bl)
 	return bl->props.brightness;
 }
 
+/**
+	backlight control for specified fb device
+*/
+static char backlight_fb[32] = {0};
+
+static int __init backlight_setup(char *str)
+{
+	strncpy(backlight_fb, str, sizeof(backlight_fb));
+	return 1;
+}
+__setup("pwm_backlight=", backlight_setup);
+
 static int pwm_backlight_check_fb(struct backlight_device *bl,
 					struct fb_info *info)
 {
 	char *id = info->fix.id;
+	
+	if (backlight_fb != NULL && backlight_fb[0] != 0) {
+		if (!strncmp(id, backlight_fb, sizeof(backlight_fb)))
+			return 1;
+		else
+			return 0;	
+	}
+	
 	if (!strcmp(id, "DISP3 BG") ||
 		!strcmp(id, "DISP3 BG - DI1") ||
 		!strcmp(id, "DISP4 BG") ||
 		!strcmp(id, "DISP4 BG - DI1"))
 	    return 1;
 	else
-	return 0;
+		return 0;
 }
 
 static const struct backlight_ops pwm_backlight_ops = {
