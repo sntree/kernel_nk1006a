@@ -14,7 +14,7 @@ ifeq ($(CONFIG_MXC_IPU_V1),y)
 	obj-$(CONFIG_FB_MXC_SYNC_PANEL)         += mxcfb.o mxcfb_modedb.o
 endif
 ifeq ($(CONFIG_MXC_IPU_V3),y)
-	obj-$(CONFIG_FB_MXC_SYNC_PANEL)         += mxc_dispdrv.o mxc_lcdif.o mxc_ipuv3_fb.o virtual_fb.o
+	obj-$(CONFIG_FB_MXC_SYNC_PANEL)         += mxc_dispdrv.o mxc_lcdif.o mxc_ipuv3_fb.o
 	obj-$(CONFIG_FB_MXC_EDID)		+= mxc_dvi.o
 endif
 	obj-$(CONFIG_FB_MXC_EPSON_PANEL)        += mxcfb_epson.o
