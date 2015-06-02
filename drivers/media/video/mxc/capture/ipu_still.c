@@ -72,7 +72,8 @@ static irqreturn_t prp_still_callback(int irq, void *dev_id)
 	if (callback_eof_flag < 5) {
 #ifndef CONFIG_MXC_IPU_V1
 		buffer_num = (buffer_num == 0) ? 1 : 0;
-		ipu_select_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER, buffer_num);
+		ipu_select_buffer(cam->ipu, ipu_get_csi_channel(cam->ipu, cam->csi),
+				  IPU_OUTPUT_BUFFER, buffer_num);
 #endif
 	} else {
 		cam->still_counter++;
@@ -94,6 +95,9 @@ static int prp_still_start(void *private)
 	u32 pixel_fmt;
 	int err;
 	ipu_channel_params_t params;
+	ipu_channel_t channel;
+	enum ipu_irq_line irq;
+
 
 	if (cam->v2f.fmt.pix.pixelformat == V4L2_PIX_FMT_YUV420)
 		pixel_fmt = IPU_PIX_FMT_YUV420P;
@@ -120,23 +124,26 @@ static int prp_still_start(void *private)
 		return -EINVAL;
 	}
 
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
+	irq = ipu_get_csi_irq(cam->ipu, cam->csi);
+
 	memset(&params, 0, sizeof(params));
-	err = ipu_init_channel(cam->ipu, CSI_MEM, &params);
+	err = ipu_init_channel(cam->ipu, channel, &params);
 	if (err != 0)
 		return err;
 
-	err = ipu_init_channel_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER,
-				      pixel_fmt, cam->v2f.fmt.pix.width,
-				      cam->v2f.fmt.pix.height,
-				      cam->v2f.fmt.pix.width, IPU_ROTATE_NONE,
-				      cam->still_buf[0], cam->still_buf[1], 0,
-				      0, 0);
+	err = ipu_init_channel_buffer(cam->ipu, channel, IPU_OUTPUT_BUFFER,
+			pixel_fmt, cam->v2f.fmt.pix.width,
+			cam->v2f.fmt.pix.height,
+			cam->v2f.fmt.pix.width, IPU_ROTATE_NONE,
+			cam->still_buf[0], cam->still_buf[1], 0,
+			0, 0);
 	if (err != 0)
 		return err;
 
 #ifdef CONFIG_MXC_IPU_V1
-	ipu_clear_irq(IPU_IRQ_SENSOR_OUT_EOF);
-	err = ipu_request_irq(IPU_IRQ_SENSOR_OUT_EOF, prp_still_callback,
+	ipu_clear_irq(irq);
+	err = ipu_request_irq(irq, prp_still_callback,
 			      0, "Mxc Camera", cam);
 	if (err != 0) {
 		printk(KERN_ERR "Error registering irq.\n");
@@ -144,27 +151,28 @@ static int prp_still_start(void *private)
 	}
 	callback_flag = 0;
 	callback_eof_flag = 0;
-	ipu_clear_irq(IPU_IRQ_SENSOR_EOF);
-	err = ipu_request_irq(IPU_IRQ_SENSOR_EOF, prp_csi_eof_callback,
+	ipu_clear_irq(irq);
+	err = ipu_request_irq(irq, prp_csi_eof_callback,
 			      0, "Mxc Camera", cam);
 	if (err != 0) {
-		printk(KERN_ERR "Error IPU_IRQ_SENSOR_EOF \n");
+		printk(KERN_ERR "Error IPU_IRQ_SENSOR_EOF\n");
 		return err;
 	}
 #else
 	callback_eof_flag = 0;
 	buffer_num = 0;
 
-	ipu_clear_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF);
-	err = ipu_request_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF, prp_still_callback,
+	ipu_clear_irq(cam->ipu, irq);
+	err = ipu_request_irq(cam->ipu, irq,
+			      prp_still_callback,
 			      0, "Mxc Camera", cam);
 	if (err != 0) {
 		printk(KERN_ERR "Error registering irq.\n");
 		return err;
 	}
 
-	ipu_select_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER, 0);
-	ipu_enable_channel(cam->ipu, CSI_MEM);
+	ipu_select_buffer(cam->ipu, channel, IPU_OUTPUT_BUFFER, 0);
+	ipu_enable_channel(cam->ipu, channel);
 	ipu_enable_csi(cam->ipu, cam->csi);
 #endif
 
@@ -181,17 +189,22 @@ static int prp_still_stop(void *private)
 {
 	cam_data *cam = (cam_data *) private;
 	int err = 0;
+	ipu_channel_t channel;
+	enum ipu_irq_line irq;
+
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
+	irq = ipu_get_csi_irq(cam->ipu, cam->csi);
 
 #ifdef CONFIG_MXC_IPU_V1
 	ipu_free_irq(IPU_IRQ_SENSOR_EOF, NULL);
 	ipu_free_irq(IPU_IRQ_SENSOR_OUT_EOF, cam);
 #else
-	ipu_free_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF, cam);
+	ipu_free_irq(cam->ipu, irq, cam);
 #endif
 
 	ipu_disable_csi(cam->ipu, cam->csi);
-	ipu_disable_channel(cam->ipu, CSI_MEM, true);
-	ipu_uninit_channel(cam->ipu, CSI_MEM);
+	ipu_disable_channel(cam->ipu, channel, true);
+	ipu_uninit_channel(cam->ipu, channel);
 
 	return err;
 }
@@ -214,6 +227,7 @@ int prp_still_select(void *private)
 
 	return 0;
 }
+EXPORT_SYMBOL(prp_still_select);
 
 /*!
  * function to de-select CSI_MEM as the working path
@@ -236,6 +250,7 @@ int prp_still_deselect(void *private)
 
 	return err;
 }
+EXPORT_SYMBOL(prp_still_deselect);
 
 /*!
  * Init the Encorder channels
@@ -257,9 +272,6 @@ void __exit prp_still_exit(void)
 
 module_init(prp_still_init);
 module_exit(prp_still_exit);
-
-EXPORT_SYMBOL(prp_still_select);
-EXPORT_SYMBOL(prp_still_deselect);
 
 MODULE_AUTHOR("Freescale Semiconductor, Inc.");
 MODULE_DESCRIPTION("IPU PRP STILL IMAGE Driver");

@@ -588,6 +588,23 @@ struct ipu_soc *ipu_get_soc(int id);
 int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params);
 void ipu_uninit_channel(struct ipu_soc *ipu, ipu_channel_t channel);
 void ipu_disable_hsp_clk(struct ipu_soc *ipu);
+static inline ipu_channel_t ipu_get_csi_channel(struct ipu_soc *ipu, int csi_id)
+{
+    if (ipu == ipu_get_soc(0)) {
+        return (csi_id == 0)?CSI_MEM0:CSI_MEM1;
+    } else {
+        return (csi_id == 0)?CSI_MEM2:CSI_MEM3;
+    }
+
+}
+static inline int ipu_get_csi_irq(struct ipu_soc *ipu, int csi_id)
+{
+    if (ipu == ipu_get_soc(0)) {
+        return (csi_id == 0)?IPU_IRQ_CSI0_OUT_EOF:IPU_IRQ_CSI1_OUT_EOF;
+    } else {
+        return (csi_id == 0)?IPU_IRQ_CSI2_OUT_EOF:IPU_IRQ_CSI3_OUT_EOF;
+    }
+}
 
 static inline bool ipu_can_rotate_in_place(ipu_rotate_mode_t rot)
 {

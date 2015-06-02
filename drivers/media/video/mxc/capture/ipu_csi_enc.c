@@ -32,16 +32,6 @@
 	#define CAMERA_TRACE(x)
 #endif
 
-static inline ipu_channel_t _get_ipu_channel(int csi_id)
-{
-    return (csi_id == 0)?CSI_MEM0:CSI_MEM1;
-}
-static inline int _get_ipu_irq(int csi_id)
-{
-    return (csi_id == 0)?IPU_IRQ_CSI0_OUT_EOF:IPU_IRQ_CSI1_OUT_EOF;
-}
-
-
 /*
  * Function definitions
  */
@@ -83,13 +73,15 @@ static int csi_enc_setup(cam_data *cam)
 	int ipu_id;
 	int csi_id;
 #endif
+	ipu_channel_t channel;
 
-	CAMERA_TRACE("In csi_enc_setup ");
-	//printk(KERN_ERR "cam->csi =%d\n", cam->csi);
+	CAMERA_TRACE("In csi_enc_setup\n");
 	if (!cam) {
 		printk(KERN_ERR "cam private is NULL\n");
 		return -ENXIO;
 	}
+
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
 
 	memset(&params, 0, sizeof(ipu_channel_params_t));
 	params.csi_mem.csi = cam->csi;
@@ -173,28 +165,25 @@ static int csi_enc_setup(cam_data *cam)
 	}
 #endif
 
-	err = ipu_init_channel(cam->ipu, _get_ipu_channel(cam->csi), &params);
-
+	err = ipu_init_channel(cam->ipu, channel, &params);
 	if (err != 0) {
 		printk(KERN_ERR "ipu_init_channel %d\n", err);
 		return err;
 	}
 
-	err = ipu_init_channel_buffer(cam->ipu, _get_ipu_channel(cam->csi), IPU_OUTPUT_BUFFER,
-				      pixel_fmt, cam->v2f.fmt.pix.width,
-				      cam->v2f.fmt.pix.height,
-				      cam->v2f.fmt.pix.bytesperline,
-				      cam->rotation,
-				      dummy, dummy, 0,
-				      cam->offset.u_offset,
-				      cam->offset.v_offset);
+	err = ipu_init_channel_buffer(cam->ipu, channel, IPU_OUTPUT_BUFFER,
+			pixel_fmt, cam->v2f.fmt.pix.width,
+			cam->v2f.fmt.pix.height,
+			cam->v2f.fmt.pix.bytesperline,
+			cam->rotation /* IPU_ROTATE_NONE */,
+			dummy, dummy, 0,
+			cam->offset.u_offset,
+			cam->offset.v_offset);
 	if (err != 0) {
 		printk(KERN_ERR "CSI_MEM output buffer\n");
 		return err;
 	}
-
-	err = ipu_enable_channel(cam->ipu, _get_ipu_channel(cam->csi));
-
+	err = ipu_enable_channel(cam->ipu, channel);
 	if (err < 0) {
 		printk(KERN_ERR "ipu_enable_channel CSI_MEM\n");
 		return err;
@@ -206,24 +195,27 @@ static int csi_enc_setup(cam_data *cam)
 /*!
  * function to update physical buffer address for encorder IDMA channel
  *
+ * @param ipu
+ * @param channel	ipu channel to update
  * @param eba         physical buffer address for encorder IDMA channel
  * @param buffer_num  int buffer 0 or buffer 1
  *
  * @return  status
  */
-static int csi_enc_eba_update1(struct ipu_soc *ipu, dma_addr_t eba, int *buffer_num)
+static inline int csi_enc_eba_updateN(struct ipu_soc *ipu, ipu_channel_t channel,
+				dma_addr_t eba, int *buffer_num)
 {
 	int err = 0;
 
 	pr_debug("eba %x\n", eba);
-	err = ipu_update_channel_buffer(ipu, CSI_MEM1, IPU_OUTPUT_BUFFER,
+	err = ipu_update_channel_buffer(ipu, channel, IPU_OUTPUT_BUFFER,
 					*buffer_num, eba);
 	if (err != 0) {
-		ipu_clear_buffer_ready(ipu, CSI_MEM1, IPU_OUTPUT_BUFFER,
+		ipu_clear_buffer_ready(ipu, channel, IPU_OUTPUT_BUFFER,
 				       *buffer_num);
 
-		err = ipu_update_channel_buffer(ipu, CSI_MEM1, IPU_OUTPUT_BUFFER,
-						*buffer_num, eba);
+		err = ipu_update_channel_buffer(ipu, channel,
+				IPU_OUTPUT_BUFFER, *buffer_num, eba);
 		if (err != 0) {
 			pr_err("ERROR: v4l2 capture: fail to update "
 			       "buf%d\n", *buffer_num);
@@ -231,38 +223,35 @@ static int csi_enc_eba_update1(struct ipu_soc *ipu, dma_addr_t eba, int *buffer_
 		}
 	}
 
-	ipu_select_buffer(ipu, CSI_MEM1, IPU_OUTPUT_BUFFER, *buffer_num);
+	ipu_select_buffer(ipu, channel, IPU_OUTPUT_BUFFER, *buffer_num);
 
 	*buffer_num = (*buffer_num == 0) ? 1 : 0;
 
 	return 0;
 }
 
-static int csi_enc_eba_update0(struct ipu_soc *ipu, dma_addr_t eba, int *buffer_num)
+static int csi_enc_eba_update0(struct ipu_soc *ipu,
+				dma_addr_t eba, int *buffer_num)
 {
-	int err = 0;
+	return csi_enc_eba_updateN(ipu, CSI_MEM0, eba, buffer_num);
+}
 
-	pr_debug("eba %x\n", eba);
-	err = ipu_update_channel_buffer(ipu, CSI_MEM0, IPU_OUTPUT_BUFFER,
-					*buffer_num, eba);
-	if (err != 0) {
-		ipu_clear_buffer_ready(ipu, CSI_MEM0, IPU_OUTPUT_BUFFER,
-				       *buffer_num);
+static int csi_enc_eba_update1(struct ipu_soc *ipu,
+				dma_addr_t eba, int *buffer_num)
+{
+	return csi_enc_eba_updateN(ipu, CSI_MEM1, eba, buffer_num);
+}
 
-		err = ipu_update_channel_buffer(ipu, CSI_MEM0, IPU_OUTPUT_BUFFER,
-						*buffer_num, eba);
-		if (err != 0) {
-			pr_err("ERROR: v4l2 capture: fail to update "
-			       "buf%d\n", *buffer_num);
-			return err;
-		}
-	}
+static int csi_enc_eba_update2(struct ipu_soc *ipu,
+				dma_addr_t eba, int *buffer_num)
+{
+	return csi_enc_eba_updateN(ipu, CSI_MEM2, eba, buffer_num);
+}
 
-	ipu_select_buffer(ipu, CSI_MEM0, IPU_OUTPUT_BUFFER, *buffer_num);
-
-	*buffer_num = (*buffer_num == 0) ? 1 : 0;
-
-	return 0;
+static int csi_enc_eba_update3(struct ipu_soc *ipu,
+				dma_addr_t eba, int *buffer_num)
+{
+	return csi_enc_eba_updateN(ipu, CSI_MEM3, eba, buffer_num);
 }
 
 /*!
@@ -275,35 +264,27 @@ static int csi_enc_enabling_tasks(void *private)
 {
 	cam_data *cam = (cam_data *) private;
 	int err = 0;
+	enum ipu_irq_line irq;
 	CAMERA_TRACE("IPU:In csi_enc_enabling_tasks\n");
 
-	if (cam->dummy_frame.vaddress &&
-		cam->dummy_frame.buffer.length
-		< PAGE_ALIGN(cam->v2f.fmt.pix.sizeimage)) {
-		dma_free_coherent(0, cam->dummy_frame.buffer.length,
-				  cam->dummy_frame.vaddress,
-				  cam->dummy_frame.paddress);
-		cam->dummy_frame.vaddress = 0;
-	}
+	irq = ipu_get_csi_irq(cam->ipu, cam->csi);
 
-	if (!cam->dummy_frame.vaddress) {
-		cam->dummy_frame.vaddress = dma_alloc_coherent(0,
-				       PAGE_ALIGN(cam->v2f.fmt.pix.sizeimage),
-				       &cam->dummy_frame.paddress,
-				       GFP_DMA | GFP_KERNEL);
-		if (cam->dummy_frame.vaddress == 0) {
-			pr_err("ERROR: v4l2 capture: Allocate dummy frame "
-			       "failed.\n");
-			return -ENOBUFS;
-		}
-		cam->dummy_frame.buffer.length =
-		    PAGE_ALIGN(cam->v2f.fmt.pix.sizeimage);
+	cam->dummy_frame.vaddress = dma_alloc_coherent(0,
+			       PAGE_ALIGN(cam->v2f.fmt.pix.sizeimage),
+			       &cam->dummy_frame.paddress,
+			       GFP_DMA | GFP_KERNEL);
+	if (cam->dummy_frame.vaddress == 0) {
+		pr_err("ERROR: v4l2 capture: Allocate dummy frame "
+		       "failed.\n");
+		return -ENOBUFS;
 	}
 	cam->dummy_frame.buffer.type = V4L2_BUF_TYPE_PRIVATE;
+	cam->dummy_frame.buffer.length =
+	    PAGE_ALIGN(cam->v2f.fmt.pix.sizeimage);
 	cam->dummy_frame.buffer.m.offset = cam->dummy_frame.paddress;
 
-	ipu_clear_irq(cam->ipu, _get_ipu_irq(cam->csi));
-	err = ipu_request_irq(cam->ipu, _get_ipu_irq(cam->csi),
+	ipu_clear_irq(cam->ipu, irq);
+	err = ipu_request_irq(cam->ipu, irq,
 			      csi_enc_callback, 0, "Mxc Camera", cam);
 	if (err != 0) {
 		printk(KERN_ERR "Error registering rot irq\n");
@@ -334,10 +315,20 @@ static int csi_enc_disabling_tasks(void *private)
 	int ipu_id;
 	int csi_id;
 #endif
+	ipu_channel_t channel;
 
-	err = ipu_disable_channel(cam->ipu, _get_ipu_channel(cam->csi), true);
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
 
-	ipu_uninit_channel(cam->ipu, _get_ipu_channel(cam->csi));
+	err = ipu_disable_channel(cam->ipu, channel, true);
+
+	ipu_uninit_channel(cam->ipu, channel);
+
+	if (cam->dummy_frame.vaddress != 0) {
+		dma_free_coherent(0, cam->dummy_frame.buffer.length,
+				  cam->dummy_frame.vaddress,
+				  cam->dummy_frame.paddress);
+		cam->dummy_frame.vaddress = 0;
+	}
 
 #ifdef CONFIG_MXC_MIPI_CSI2
 	mipi_csi2_info = mipi_csi2_get_info();
@@ -386,9 +377,7 @@ static int csi_enc_disable_csi(void *private)
 	/* free csi eof irq firstly.
 	 * when disable csi, wait for idmac eof.
 	 * it requests eof irq again */
-	ipu_free_irq(cam->ipu, _get_ipu_irq(cam->csi), cam);
-
-	//printk("\nMakis is invoking csi_enc_disable_csi(), ipu=%x, csi=%d \n", cam->ipu, cam->csi);
+	ipu_free_irq(cam->ipu, ipu_get_csi_irq(cam->ipu, cam->csi), cam);
 
 	return ipu_disable_csi(cam->ipu, cam->csi);
 }
@@ -406,10 +395,24 @@ int csi_enc_select(void *private)
 	int err = 0;
 
 	if (cam) {
-
-		if (cam->csi == 0) cam->enc_update_eba = csi_enc_eba_update0;
-		if (cam->csi == 1) cam->enc_update_eba = csi_enc_eba_update1;
-
+		ipu_channel_t channel = ipu_get_csi_channel(cam->ipu, cam->csi);
+		switch (channel) {
+		case CSI_MEM0:
+			cam->enc_update_eba = csi_enc_eba_update0;
+			break;
+		case CSI_MEM1:
+			cam->enc_update_eba = csi_enc_eba_update1;
+			break;
+		case CSI_MEM2:
+			cam->enc_update_eba = csi_enc_eba_update2;
+			break;
+		case CSI_MEM3:
+			cam->enc_update_eba = csi_enc_eba_update3;
+			break;
+		default:
+			err = -EIO;
+			break;
+		}
 		cam->enc_enable = csi_enc_enabling_tasks;
 		cam->enc_disable = csi_enc_disabling_tasks;
 		cam->enc_enable_csi = csi_enc_enable_csi;
@@ -420,6 +423,7 @@ int csi_enc_select(void *private)
 
 	return err;
 }
+EXPORT_SYMBOL(csi_enc_select);
 
 /*!
  * function to de-select CSI ENC as the working path
@@ -443,6 +447,7 @@ int csi_enc_deselect(void *private)
 
 	return err;
 }
+EXPORT_SYMBOL(csi_enc_deselect);
 
 /*!
  * Init the Encorder channels
@@ -464,9 +469,6 @@ void __exit csi_enc_exit(void)
 
 module_init(csi_enc_init);
 module_exit(csi_enc_exit);
-
-EXPORT_SYMBOL(csi_enc_select);
-EXPORT_SYMBOL(csi_enc_deselect);
 
 MODULE_AUTHOR("Freescale Semiconductor, Inc.");
 MODULE_DESCRIPTION("CSI ENC Driver");

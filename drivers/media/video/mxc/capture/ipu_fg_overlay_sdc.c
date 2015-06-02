@@ -120,8 +120,12 @@ static void get_disp_ipu(cam_data *cam)
 static irqreturn_t csi_enc_callback(int irq, void *dev_id)
 {
 	cam_data *cam = (cam_data *) dev_id;
+	ipu_channel_t channel;
 
-	ipu_select_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER, csi_buffer_num);
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
+
+	ipu_select_buffer(cam->ipu, channel,
+		IPU_OUTPUT_BUFFER, csi_buffer_num);
 	if ((cam->crop_current.width != cam->win.w.width) ||
 		(cam->crop_current.height != cam->win.w.height) ||
 		(vf_out_format != IPU_PIX_FMT_NV12) ||
@@ -140,12 +144,15 @@ static int csi_enc_setup(cam_data *cam)
 	int ipu_id;
 	int csi_id;
 #endif
+	ipu_channel_t channel;
 
 	CAMERA_TRACE("In csi_enc_setup\n");
 	if (!cam) {
 		printk(KERN_ERR "cam private is NULL\n");
 		return -ENXIO;
 	}
+
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
 
 	memset(&params, 0, sizeof(ipu_channel_params_t));
 	params.csi_mem.csi = cam->csi;
@@ -240,7 +247,7 @@ static int csi_enc_setup(cam_data *cam)
 	}
 	pr_debug("vf_bufs %x %x\n", cam->vf_bufs[0], cam->vf_bufs[1]);
 
-	err = ipu_init_channel(cam->ipu, CSI_MEM, &params);
+	err = ipu_init_channel(cam->ipu, channel, &params);
 	if (err != 0) {
 		printk(KERN_ERR "ipu_init_channel %d\n", err);
 		goto out_1;
@@ -250,28 +257,31 @@ static int csi_enc_setup(cam_data *cam)
 		(cam->crop_current.height == cam->win.w.height) &&
 		(vf_out_format == IPU_PIX_FMT_NV12) &&
 		(cam->rotation < IPU_ROTATE_VERT_FLIP)) {
-		err = ipu_init_channel_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER,
-					      IPU_PIX_FMT_NV12,
-					      cam->crop_current.width,
-					      cam->crop_current.height,
-					      cam->crop_current.width, IPU_ROTATE_NONE,
-					      fbi->fix.smem_start + (fbi->fix.line_length * fbvar.yres),
-					      fbi->fix.smem_start, 0,
-					      cam->offset.u_offset, cam->offset.u_offset);
+		err = ipu_init_channel_buffer(cam->ipu, channel,
+				IPU_OUTPUT_BUFFER, IPU_PIX_FMT_NV12,
+				cam->crop_current.width,
+				cam->crop_current.height,
+				cam->crop_current.width, IPU_ROTATE_NONE,
+				fbi->fix.smem_start +
+				(fbi->fix.line_length * fbvar.yres),
+				fbi->fix.smem_start, 0,
+				cam->offset.u_offset, cam->offset.u_offset);
 	} else {
-		err = ipu_init_channel_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER,
-					      IPU_PIX_FMT_NV12,
-					      cam->crop_current.width,
-					      cam->crop_current.height,
-					      cam->crop_current.width, IPU_ROTATE_NONE,
-					      cam->vf_bufs[0], cam->vf_bufs[1], 0,
-					      cam->offset.u_offset, cam->offset.u_offset);
+		err = ipu_init_channel_buffer(cam->ipu, channel,
+				IPU_OUTPUT_BUFFER, IPU_PIX_FMT_NV12,
+				cam->crop_current.width,
+				cam->crop_current.height,
+				cam->crop_current.width, IPU_ROTATE_NONE,
+				cam->vf_bufs[0], cam->vf_bufs[1], 0,
+				cam->offset.u_offset, cam->offset.u_offset);
 	}
 	if (err != 0) {
 		printk(KERN_ERR "CSI_MEM output buffer\n");
 		goto out_1;
 	}
-	err = ipu_enable_channel(cam->ipu, CSI_MEM);
+
+	err = ipu_enable_channel(cam->ipu, channel);
+
 	if (err < 0) {
 		printk(KERN_ERR "ipu_enable_channel CSI_MEM\n");
 		goto out_1;
@@ -279,8 +289,9 @@ static int csi_enc_setup(cam_data *cam)
 
 	csi_buffer_num = 0;
 
-	ipu_select_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER, 0);
-	ipu_select_buffer(cam->ipu, CSI_MEM, IPU_OUTPUT_BUFFER, 1);
+	ipu_select_buffer(cam->ipu, channel, IPU_OUTPUT_BUFFER, 0);
+	ipu_select_buffer(cam->ipu, channel, IPU_OUTPUT_BUFFER, 1);
+
 	return err;
 out_1:
 	if (cam->vf_bufs_vaddr[0]) {
@@ -311,13 +322,16 @@ static int csi_enc_enabling_tasks(void *private)
 {
 	cam_data *cam = (cam_data *) private;
 	int err = 0;
+	enum ipu_irq_line irq;
 	CAMERA_TRACE("IPU:In csi_enc_enabling_tasks\n");
 
-	ipu_clear_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF);
-	err = ipu_request_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF,
+	irq = ipu_get_csi_irq(cam->ipu, cam->csi);
+
+	ipu_clear_irq(cam->ipu, irq);
+	err = ipu_request_irq(cam->ipu, irq,
 			      csi_enc_callback, 0, "Mxc Camera", cam);
 	if (err != 0) {
-		printk(KERN_ERR "Error registering CSI0_OUT_EOF irq\n");
+		printk(KERN_ERR "Error registering CSI_OUT_EOF irq\n");
 		return err;
 	}
 
@@ -331,7 +345,7 @@ static int csi_enc_enabling_tasks(void *private)
 
 	return err;
 out1:
-	ipu_free_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF, cam);
+	ipu_free_irq(cam->ipu, irq, cam);
 	return err;
 }
 
@@ -457,13 +471,15 @@ static int foreground_stop(void *private)
 	int ipu_id;
 	int csi_id;
 #endif
+	ipu_channel_t channel;
 
 	if (cam->overlay_active == false)
 		return 0;
 
-	err = ipu_disable_channel(cam->ipu, CSI_MEM, true);
+	channel = ipu_get_csi_channel(cam->ipu, cam->csi);
 
-	ipu_uninit_channel(cam->ipu, CSI_MEM);
+	err = ipu_disable_channel(cam->ipu, channel, true);
+	ipu_uninit_channel(cam->ipu, channel);
 
 	csi_buffer_num = 0;
 	buffer_num = 0;
@@ -511,7 +527,7 @@ static int foreground_stop(void *private)
 	}
 #endif
 
-	flush_work_sync(&cam->csi_work_struct);
+	flush_work(&cam->csi_work_struct);
 	cancel_work_sync(&cam->csi_work_struct);
 
 	if (cam->vf_bufs_vaddr[0]) {
@@ -559,7 +575,7 @@ static int foreground_disable_csi(void *private)
 	/* free csi eof irq firstly.
 	 * when disable csi, wait for idmac eof.
 	 * it requests eof irq again */
-	ipu_free_irq(cam->ipu, IPU_IRQ_CSI0_OUT_EOF, cam);
+	ipu_free_irq(cam->ipu, ipu_get_csi_irq(cam->ipu, cam->csi), cam);
 
 	return ipu_disable_csi(cam->ipu, cam->csi);
 }
@@ -587,6 +603,7 @@ int foreground_sdc_select(void *private)
 
 	return err;
 }
+EXPORT_SYMBOL(foreground_sdc_select);
 
 /*!
  * function to de-select foreground as the working path
@@ -608,6 +625,7 @@ int foreground_sdc_deselect(void *private)
 	}
 	return 0;
 }
+EXPORT_SYMBOL(foreground_sdc_deselect);
 
 /*!
  * Init viewfinder task.
@@ -630,9 +648,6 @@ void __exit foreground_sdc_exit(void)
 
 module_init(foreground_sdc_init);
 module_exit(foreground_sdc_exit);
-
-EXPORT_SYMBOL(foreground_sdc_select);
-EXPORT_SYMBOL(foreground_sdc_deselect);
 
 MODULE_AUTHOR("Freescale Semiconductor, Inc.");
 MODULE_DESCRIPTION("IPU PRP VF SDC Driver");
