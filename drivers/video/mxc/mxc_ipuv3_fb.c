@@ -1458,9 +1458,11 @@ static int main_ipu_di = -1;
 static int __init main_display_id_setup(char *str)
 {
 	int id, di;
-	if (sscanf("%d,%d", str, &id, &di) == 2) {
+	//printk("### got main_display_id: %s\n ", str);
+	if (sscanf(str, "%d,%d", &id, &di) == 2) {
 		main_ipu_id=id;
 		main_ipu_di=di;
+		//printk("### got main_display_id: %d %d\n ", main_ipu_id, main_ipu_di);
 	}
 	return 1;
 }
@@ -1475,6 +1477,9 @@ static int mxcfb_blank(int blank, struct fb_info *info)
 	int ret = 0;
 
 	dev_dbg(info->device, "blank = %d\n", blank);
+	// printk("blank %d %d - %d %d  %d\n",
+	// 		mxc_fbi->ipu_id, main_ipu_id, mxc_fbi->ipu_di, main_ipu_di,
+	// 		blank);
 	if (mxc_fbi->ipu_id == main_ipu_id && mxc_fbi->ipu_di == main_ipu_di && blank == FB_BLANK_POWERDOWN) {
 		printk("do nothing for MAIN display\n");
 		return 0;
@@ -2492,11 +2497,22 @@ static int mxcfb_probe(struct platform_device *pdev)
 					    IPU_IRQ_VSYNC_PRE_1 :
 					    IPU_IRQ_VSYNC_PRE_0;
 		mxcfbi->ipu_ch = MEM_BG_SYNC;
-		/* Unblank the primary fb only by default */
-		if (pdev->id == 0)
-			mxcfbi->cur_blank = mxcfbi->next_blank = FB_BLANK_UNBLANK;
-		else
+
+		if (plat_data->mode_str && strstr(plat_data->mode_str, "blank")) {
 			mxcfbi->cur_blank = mxcfbi->next_blank = FB_BLANK_POWERDOWN;
+			printk("### %s mxcfbi->ipu_id %d  pdev->id %d mode: %s\n", plat_data->disp_dev, 
+					mxcfbi->ipu_id, pdev->id, "blank");
+		} else {
+			mxcfbi->cur_blank = mxcfbi->next_blank = FB_BLANK_UNBLANK;
+			printk("### %s mxcfbi->ipu_id %d  pdev->id %d mode: %s\n", plat_data->disp_dev, 
+					mxcfbi->ipu_id, pdev->id, "unblank");
+		}
+
+		/* Unblank the primary fb only by default */
+		// if (pdev->id == 0)
+		// 	mxcfbi->cur_blank = mxcfbi->next_blank = FB_BLANK_UNBLANK;
+		// else
+		// 	mxcfbi->cur_blank = mxcfbi->next_blank = FB_BLANK_POWERDOWN;
 
 		ret = mxcfb_register(fbi);
 		if (ret < 0)
