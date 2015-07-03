@@ -2546,6 +2546,9 @@ static int mxcfb_probe(struct platform_device *pdev)
 						    "file for disp device "
 						    "propety\n", ret);
 	} else {
+		printk("### %s mxcfbi->ipu_id %d  pdev->id %d  just register\n", plat_data->disp_dev, 
+					mxcfbi->ipu_id, pdev->id);
+
 		mxcfbi->ipu_ch_irq = IPU_IRQ_DC_SYNC_EOF;
 		mxcfbi->ipu_ch_nf_irq = IPU_IRQ_DC_SYNC_NFACK;
 		mxcfbi->ipu_alp_ch_irq = -1;

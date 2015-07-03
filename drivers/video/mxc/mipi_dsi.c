@@ -830,6 +830,7 @@ static int mipi_dsi_disp_init(struct mxc_dispdrv_handle *disp,
 	setting->dev_id = pdata->ipu_id;
 	setting->disp_id = pdata->disp_id;
 
+#if 0
 	err = request_irq(mipi_dsi->irq, mipi_dsi_irq_handler,
 			  0, "mipi_dsi", mipi_dsi);
 	if (err) {
@@ -837,6 +838,7 @@ static int mipi_dsi_disp_init(struct mxc_dispdrv_handle *disp,
 		err = -EBUSY;
 		goto err_req_irq;
 	}
+#endif	
 
 	err = mipi_dsi_lcd_init(mipi_dsi, setting);
 	if (err < 0) {
